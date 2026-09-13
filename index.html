@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Firebase SDK Modules Loader -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -47,9 +46,9 @@
                 <div>
                     <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
                         Excellington
-                        <span id="syncBadge" class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium hidden sm:inline-flex items-center gap-1.5">
+                        <span id="syncBadge" onclick="showSyncDiagnostics()" class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium hidden sm:inline-flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity" title="Clique para verificar o status da sincronização">
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                            Nuvem Conectada
+                            <span id="syncBadgeText">Nuvem Conectada</span>
                         </span>
                     </h1>
                     <p class="text-xs text-slate-400">Vitrine oficial de aplicativos e ferramentas</p>
@@ -58,7 +57,7 @@
 
             <div class="flex items-center space-x-3">
                 <!-- Secret Security Icon (5 clicks required to unlock admin) -->
-                <button id="securityIcon" class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-indigo-400 transition-all flex items-center justify-center cursor-pointer shadow-sm" title="Painel restrito">
+                <button id="securityIcon" class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-indigo-400 transition-all flex items-center justify-center cursor-pointer shadow-sm">
                     <i class="fa-solid fa-shield-halved text-sm pointer-events-none"></i>
                 </button>
 
@@ -236,15 +235,22 @@
         let user = null;
         let apps = [];
         let isAdminUnlocked = false;
+        let isCloudMode = false;
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'excellington-public-apps';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        
+        let firebaseConfig = null;
+        try {
+            firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        } catch (e) {
+            firebaseConfig = null;
+        }
 
-        // Initialize Firebase Firestore with strict compliance to security rules
+        // Initialize Firebase Firestore with automatic hybrid local fallback
         async function initFirebase() {
             if (!firebaseConfig || !window.firebaseModules) {
-                console.warn("Firebase config not found. Running in offline fallback mode.");
-                loadOfflineDefaultApps();
+                console.warn("Firebase config not found. Running in robust offline hybrid mode.");
+                initHybridLocalMode();
                 return;
             }
 
@@ -255,7 +261,6 @@
                 db = getFirestore(app);
                 auth = getAuth(app);
 
-                // Rule 3: Auth before queries - capture credential properly
                 let cred;
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     cred = await signInWithCustomToken(auth, __initial_auth_token);
@@ -269,15 +274,14 @@
                 }
 
                 if (!db) {
-                    console.error("Firestore database instance not initialized.");
-                    showToast("Erro ao conectar com o banco de dados.", "error");
-                    return;
+                    throw new Error("Firestore instance could not be created.");
                 }
 
-                // Rule 1: Strict public data path
+                isCloudMode = true;
+                updateSyncBadge(true);
+
                 const appsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'apps');
 
-                // Real-time synchronization with error callback
                 onSnapshot(appsCollectionRef, (snapshot) => {
                     const loadedApps = [];
                     snapshot.forEach((docSnap) => {
@@ -286,7 +290,6 @@
 
                     apps = loadedApps;
 
-                    // If collection is empty, seed curated GitHub apps for the first time
                     if (apps.length === 0) {
                         seedDefaultApps();
                     } else {
@@ -297,14 +300,57 @@
                     }
                 }, (error) => {
                     console.error("Firestore snapshot error:", error);
-                    showToast("Erro ao sincronizar dados em tempo real.", "error");
-                    loadOfflineDefaultApps();
+                    initHybridLocalMode();
                 });
 
             } catch (e) {
-                console.error("Firebase initialization failed:", e);
-                showToast("Erro ao conectar com o servidor.", "error");
-                loadOfflineDefaultApps();
+                console.warn("Firebase cloud connection unavailable, switching to hybrid local mode:", e);
+                initHybridLocalMode();
+            }
+        }
+
+        function initHybridLocalMode() {
+            isCloudMode = false;
+            updateSyncBadge(false);
+            
+            const saved = localStorage.getItem('excellington_apps');
+            if (saved) {
+                try {
+                    apps = JSON.parse(saved);
+                } catch (err) {
+                    apps = getDefaultAppsList();
+                }
+            } else {
+                apps = getDefaultAppsList();
+                saveLocalApps();
+            }
+
+            renderUserGrid();
+            if (!document.getElementById('adminView').classList.contains('hidden')) {
+                renderAdminTable();
+            }
+        }
+
+        function updateSyncBadge(cloudActive) {
+            const badgeText = document.getElementById('syncBadgeText');
+            const badge = document.getElementById('syncBadge');
+            if (!badgeText || !badge) return;
+
+            badge.classList.remove('hidden');
+            if (cloudActive) {
+                badgeText.textContent = "Nuvem Conectada";
+                badge.className = "text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium inline-flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity";
+            } else {
+                badgeText.textContent = "Modo Local / Sincronizado";
+                badge.className = "text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium inline-flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity";
+            }
+        }
+
+        function showSyncDiagnostics() {
+            if (isCloudMode) {
+                showToast('Status: Conectado ao Banco de Dados na Nuvem (Firebase). Sincronização em tempo real ativa para todos os usuários!', 'success');
+            } else {
+                showToast('Status: Rodando em modo local de contingência. Suas alterações estão salvas neste navegador.', 'info');
             }
         }
 
@@ -312,49 +358,45 @@
             initFirebase();
         });
 
-        function loadOfflineDefaultApps() {
-            apps = [
+        function getDefaultAppsList() {
+            return [
                 {
-                    id: '1',
-                    title: 'Excellington Dashboard',
-                    link: 'https://github.com/excellington',
-                    description: 'Painel analítico principal para monitoramento de dados em tempo real.',
-                    createdAt: Date.now()
-                }
-            ];
-            renderUserGrid();
-        }
-
-        // Seed curated default GitHub apps into Cloud Firestore if empty
-        async function seedDefaultApps() {
-            if (!db) return;
-            // Ensure auth state is ready
-            if (!user && auth && auth.currentUser) {
-                user = auth.currentUser;
-            }
-            
-            const { addDoc, collection } = window.firebaseModules;
-            
-            const defaultAppsList = [
-                {
+                    id: 'default-1',
                     title: 'Excellington Dashboard',
                     link: 'https://github.com/excellington',
                     description: 'Painel analítico completo para monitoramento de dados em tempo real com exportação em múltiplos formatos e gráficos dinâmicos.',
                     createdAt: Date.now()
                 },
                 {
+                    id: 'default-2',
                     title: 'CalcPro Financeiro',
                     link: 'https://github.com/excellington',
                     description: 'Calculadora de juros compostos, fluxo de caixa e projeções financeiras avançadas desenvolvida sob medida para gestores.',
                     createdAt: Date.now()
                 },
                 {
+                    id: 'default-3',
                     title: 'TaskFlow Manager',
                     link: 'https://github.com/excellington',
                     description: 'Gerenciador de tarefas ágil estilo Kanban com priorização inteligente, etiquetas customizadas e persistência segura.',
                     createdAt: Date.now()
                 }
             ];
+        }
+
+        async function seedDefaultApps() {
+            if (!isCloudMode || !db) return;
+            if (!user && auth && auth.currentUser) {
+                user = auth.currentUser;
+            }
+            
+            const { addDoc, collection } = window.firebaseModules;
+            const defaultAppsList = getDefaultAppsList().map(item => ({
+                title: item.title,
+                link: item.link,
+                description: item.description,
+                createdAt: item.createdAt
+            }));
 
             try {
                 const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'apps');
@@ -363,6 +405,14 @@
                 }
             } catch (e) {
                 console.error("Error seeding default apps:", e);
+            }
+        }
+
+        function saveLocalApps() {
+            try {
+                localStorage.setItem('excellington_apps', JSON.stringify(apps));
+            } catch (e) {
+                console.error("Error saving to localStorage:", e);
             }
         }
 
@@ -549,7 +599,7 @@
             modal.classList.remove('flex');
         }
 
-        // Form Submit Handler (Add or Update in Firestore)
+        // Form Submit Handler (Cloud Firestore or Local Hybrid)
         async function handleFormSubmit(event) {
             event.preventDefault();
             
@@ -560,57 +610,75 @@
 
             if (!title || !link || !description) return;
 
-            // Ensure auth user and db reference are ready
-            if (!user && auth && auth.currentUser) {
-                user = auth.currentUser;
-            }
-
-            if (!db) {
-                showToast('Erro: Banco de dados não conectado.', 'error');
-                return;
-            }
-
             try {
-                const { doc, addDoc, setDoc, collection } = window.firebaseModules;
-                const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'apps');
+                if (isCloudMode && db && window.firebaseModules) {
+                    const { doc, addDoc, setDoc, collection } = window.firebaseModules;
+                    const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'apps');
 
-                if (id) {
-                    // Update existing document in Firestore
-                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'apps', id);
-                    await setDoc(docRef, {
-                        title,
-                        link,
-                        description,
-                        updatedAt: Date.now()
-                    }, { merge: true });
-                    showToast('Utilitário atualizado no servidor com sucesso!', 'success');
+                    if (id) {
+                        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'apps', id);
+                        await setDoc(docRef, {
+                            title,
+                            link,
+                            description,
+                            updatedAt: Date.now()
+                        }, { merge: true });
+                        showToast('Utilitário atualizado no servidor com sucesso!', 'success');
+                    } else {
+                        await addDoc(colRef, {
+                            title,
+                            link,
+                            description,
+                            createdAt: Date.now()
+                        });
+                        showToast('Novo utilitário adicionado ao servidor com sucesso!', 'success');
+                    }
                 } else {
-                    // Create new document in Firestore
-                    await addDoc(colRef, {
-                        title,
-                        link,
-                        description,
-                        createdAt: Date.now()
-                    });
-                    showToast('Novo utilitário adicionado ao servidor com sucesso!', 'success');
+                    // Hybrid Local Storage mode fallback
+                    if (id) {
+                        const index = apps.findIndex(a => a.id === id);
+                        if (index !== -1) {
+                            apps[index] = { ...apps[index], title, link, description, updatedAt: Date.now() };
+                        }
+                        showToast('Utilitário atualizado com sucesso!', 'success');
+                    } else {
+                        const newApp = {
+                            id: 'local-' + Date.now(),
+                            title,
+                            link,
+                            description,
+                            createdAt: Date.now()
+                        };
+                        apps.push(newApp);
+                        showToast('Novo utilitário adicionado com sucesso!', 'success');
+                    }
+                    saveLocalApps();
+                    renderUserGrid();
+                    renderAdminTable();
                 }
 
                 closeAppModal();
             } catch (e) {
                 console.error("Error saving app:", e);
-                showToast('Erro ao salvar utilitário no servidor.', 'error');
+                showToast('Erro ao salvar utilitário.', 'error');
             }
         }
 
-        // Delete App from Firestore
+        // Delete App from Cloud or Local
         async function deleteApp(id) {
-            if (!db) return;
-
             try {
-                const { doc, deleteDoc } = window.firebaseModules;
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'apps', id);
-                await deleteDoc(docRef);
-                showToast('Utilitário excluído com sucesso.', 'success');
+                if (isCloudMode && db && window.firebaseModules) {
+                    const { doc, deleteDoc } = window.firebaseModules;
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'apps', id);
+                    await deleteDoc(docRef);
+                    showToast('Utilitário excluído com sucesso.', 'success');
+                } else {
+                    apps = apps.filter(a => a.id !== id);
+                    saveLocalApps();
+                    renderUserGrid();
+                    renderAdminTable();
+                    showToast('Utilitário excluído com sucesso.', 'success');
+                }
             } catch (e) {
                 console.error("Error deleting app:", e);
                 showToast('Erro ao excluir utilitário.', 'error');
@@ -687,9 +755,11 @@
 
         // Fallback initialization check on window load
         window.onload = function() {
-            if (!db && typeof window.initFirebase === 'function') {
-                window.initFirebase();
-            }
+            setTimeout(() => {
+                if (apps.length === 0 && !window.firebaseModules) {
+                    initHybridLocalMode();
+                }
+            }, 800);
         };
     </script>
 </body>
