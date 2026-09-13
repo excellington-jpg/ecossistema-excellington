@@ -1,0 +1,567 @@
+﻿
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excellington - Utilitários Excelentes</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-full flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
+
+    <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('user')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid fa-cube text-white text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">Excellington</h1>
+                    <p class="text-xs text-indigo-400 font-medium">Utilitários Excelentes</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3 sm:space-x-4">
+                <!-- Security Icon for Secret 5-Click Admin Unlock -->
+                <button id="securityIcon" type="button" class="p-3 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-400 hover:text-indigo-400 border border-slate-700/50 transition-all duration-200 cursor-pointer">
+                    <i class="fa-solid fa-shield-halved text-sm pointer-events-none"></i>
+                </button>
+
+                <!-- Navigation Switch (Visible when admin is unlocked) -->
+                <nav id="adminNavTab" class="hidden">
+                    <button onclick="switchView('admin')" id="adminTabBtn" class="px-3.5 py-2 rounded-xl bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 text-sm font-medium hover:bg-indigo-600/30 transition-all flex items-center space-x-2">
+                        <i class="fa-solid fa-screwdriver-wrench pointer-events-none"></i>
+                        <span class="hidden sm:inline">Gerenciar</span>
+                    </button>
+                </nav>
+
+                <!-- Exit Button -->
+                <button onclick="exitApplication()" type="button" class="px-3.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-sm font-medium transition-all flex items-center space-x-2 cursor-pointer">
+                    <i class="fa-solid fa-power-off pointer-events-none"></i>
+                    <span class="hidden sm:inline">SAIR</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- USER VIEW: App Showcase Grid -->
+        <div id="userView" class="space-y-8">
+            <div class="text-center max-w-2xl mx-auto space-y-3">
+                <span class="px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-xs font-semibold tracking-wide uppercase border border-indigo-500/20">Ecossistema de Apps</span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">Ferramentas criadas para atender suas necessidades.</h2>
+                <p class="text-slate-400 text-sm sm:text-base">Explore os aplicativos utilitários desenvolvidos por Excellington para otimizar o seu dia a dia.</p>
+            </div>
+
+            <!-- Search and Filter Bar -->
+            <div class="max-w-md mx-auto relative">
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                    <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                </span>
+                <input type="text" id="searchInput" oninput="filterApps()" placeholder="Buscar utilitários..." class="w-full pl-10 pr-4 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all">
+            </div>
+
+            <!-- Apps Grid -->
+            <div id="appsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
+                <!-- Dynamic Content injected via JS -->
+            </div>
+
+            <!-- Empty State for User -->
+            <div id="emptyState" class="hidden text-center py-16 space-y-4">
+                <div class="w-16 h-16 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-center mx-auto text-slate-600 text-2xl">
+                    <i class="fa-solid fa-box-open"></i>
+                </div>
+                <h3 class="text-lg font-medium text-slate-300">Nenhum utilitário encontrado</h3>
+                <p class="text-sm text-slate-500">O administrador ainda não cadastrou nenhum aplicativo ou a busca não retornou resultados.</p>
+            </div>
+        </div>
+
+        <!-- ADMIN VIEW: Management Panel -->
+        <div id="adminView" class="hidden space-y-8">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-800 pb-6">
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <span class="px-2.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 text-xs font-semibold border border-emerald-500/20">Modo Administrador</span>
+                        <button onclick="switchView('user')" class="text-xs text-indigo-400 hover:underline">Voltar para a Vitrine</button>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white mt-1">Gerenciamento de Utilitários</h2>
+                    <p class="text-slate-400 text-sm">Adicione, edite ou remova os links dos aplicativos do Excellington.</p>
+                </div>
+                <button onclick="openAppModal()" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm transition-all shadow-lg shadow-indigo-600/30 flex items-center justify-center space-x-2 cursor-pointer">
+                    <i class="fa-solid fa-plus text-xs pointer-events-none"></i>
+                    <span>Novo Utilitário</span>
+                </button>
+            </div>
+
+            <!-- Admin Apps Table / List -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-800 bg-slate-900/50 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                <th class="py-4 px-6">Aplicativo</th>
+                                <th class="py-4 px-6">Link de Acesso</th>
+                                <th class="py-4 px-6">Informações</th>
+                                <th class="py-4 px-6 text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminTableBody" class="divide-y divide-slate-800 text-sm">
+                            <!-- Dynamic Content injected via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Add/Edit App Modal -->
+    <div id="appModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-6 shadow-2xl relative animate-in fade-in zoom-in duration-200">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <h3 id="modalTitle" class="text-lg font-bold text-white">Adicionar Novo Utilitário</h3>
+                <button onclick="closeAppModal()" class="text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-lg pointer-events-none"></i>
+                </button>
+            </div>
+            
+            <form id="appForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
+                <input type="hidden" id="appId">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 uppercase tracking-wider mb-1.5">Título do Aplicativo</label>
+                    <input type="text" id="appTitleInput" required placeholder="Ex: Planilha Master Pro" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 uppercase tracking-wider mb-1.5">Endereço de Link (URL)</label>
+                    <input type="url" id="appLinkInput" required placeholder="https://exemplo.com/app" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 uppercase tracking-wider mb-1.5">Informações de Divulgação</label>
+                    <textarea id="appDescInput" required rows="4" placeholder="Descreva os recursos principais, vantagens e para que serve o aplicativo..." class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-all resize-none"></textarea>
+                </div>
+                <div class="flex justify-end space-x-3 pt-4 border-t border-slate-800">
+                    <button type="button" onclick="closeAppModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 font-medium text-sm transition-all cursor-pointer">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm transition-all shadow-lg shadow-indigo-600/20 cursor-pointer">Salvar Utilitário</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Detail Info Modal (User "Saber Mais") -->
+    <div id="detailModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-6 shadow-2xl relative">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center">
+                        <i class="fa-solid fa-circle-info pointer-events-none"></i>
+                    </div>
+                    <h3 id="detailModalTitle" class="text-lg font-bold text-white">Detalhes do Aplicativo</h3>
+                </div>
+                <button onclick="closeDetailModal()" class="text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-lg pointer-events-none"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Sobre o Aplicativo</span>
+                    <p id="detailModalDesc" class="text-slate-300 text-sm mt-1 leading-relaxed whitespace-pre-wrap"></p>
+                </div>
+                <div class="pt-2">
+                    <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Link de Acesso</span>
+                    <div class="mt-1 p-3 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-between">
+                        <span id="detailModalLinkText" class="text-indigo-400 text-xs font-mono truncate mr-2"></span>
+                        <button onclick="copyDetailLink()" class="text-slate-400 hover:text-white text-xs bg-slate-800 px-2.5 py-1 rounded-lg cursor-pointer">Copiar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-3 pt-4 border-t border-slate-800">
+                <button onclick="closeDetailModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 font-medium text-sm transition-all cursor-pointer">Fechar</button>
+                <a id="detailModalBtn" href="#" target="_blank" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm transition-all shadow-lg shadow-indigo-600/20 flex items-center space-x-2">
+                    <span>Abrir Aplicativo</span>
+                    <i class="fa-solid fa-arrow-up-right-from-square text-xs pointer-events-none"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Toast / Notification Alert -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <div id="toastContent" class="bg-slate-900 border border-slate-700 text-slate-200 px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3 text-sm">
+            <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
+            <span id="toastMessage">Mensagem de alerta</span>
+        </div>
+    </div>
+
+    <script>
+        // Default Mock Data for Excellington Apps if LocalStorage is empty
+        const defaultApps = [
+            {
+                id: '1',
+                title: 'Excellington Dash',
+                link: 'https://github.com',
+                description: 'Painel analítico completo para monitoramento de dados em tempo real com exportação em múltiplos formatos e gráficos dinâmicos.'
+            },
+            {
+                id: '2',
+                title: 'CalcPro Financeiro',
+                link: 'https://github.com',
+                description: 'Calculadora de juros compostos, fluxo de caixa e projeções financeiras avançadas desenvolvida sob medida para gestores.'
+            },
+            {
+                id: '3',
+                title: 'TaskFlow Manager',
+                link: 'https://github.com',
+                description: 'Gerenciador de tarefas ágil estilo Kanban com priorização inteligente, etiquetas customizadas e persistência local segura.'
+            }
+        ];
+
+        // Retrieve apps from LocalStorage or initialize
+        let apps = JSON.parse(localStorage.getItem('excellington_apps')) || defaultApps;
+        let isAdminUnlocked = false;
+
+        // Security Icon 5-click easter egg counter
+        let securityClickCount = 0;
+        let securityTimer = null;
+
+        const securityBtn = document.getElementById('securityIcon');
+        if (securityBtn) {
+            securityBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                securityClickCount++;
+                
+                // Visual feedback of click registered
+                const icon = securityBtn.querySelector('i');
+                if (icon) {
+                    icon.classList.add('text-indigo-400', 'scale-125');
+                    setTimeout(() => icon.classList.remove('text-indigo-400', 'scale-125'), 250);
+                }
+
+                clearTimeout(securityTimer);
+                
+                if (securityClickCount >= 14) {
+                    unlockAdmin();
+                    securityClickCount = 0;
+                } else {
+                    securityTimer = setTimeout(() => {
+                        securityClickCount = 0;
+                    }, 1500); // Resets if clicks are not consecutive within 1.5 seconds
+                }
+            });
+        }
+
+        function unlockAdmin() {
+            isAdminUnlocked = true;
+            const navTab = document.getElementById('adminNavTab');
+            if (navTab) navTab.classList.remove('hidden');
+            showToast('Modo Administrador liberado com sucesso!', 'success');
+            switchView('admin');
+        }
+
+        function switchView(viewName) {
+            const userView = document.getElementById('userView');
+            const adminView = document.getElementById('adminView');
+            const navTab = document.getElementById('adminNavTab');
+
+            if (viewName === 'admin') {
+                if (!isAdminUnlocked) {
+                    showToast('Acesso negado. Clique no ícone de segurança 5 vezes consecutivas.', 'error');
+                    return;
+                }
+                userView.classList.add('hidden');
+                adminView.classList.remove('hidden');
+                renderAdminTable();
+            } else {
+                isAdminUnlocked = false; // Lock admin access again
+                if (navTab) navTab.classList.add('hidden'); // Hide the admin management tab button
+                adminView.classList.add('hidden');
+                userView.classList.remove('hidden');
+                renderUserGrid();
+            }
+        }
+
+        // Save apps to LocalStorage
+        function saveApps() {
+            localStorage.setItem('excellington_apps', JSON.stringify(apps));
+        }
+
+        // Render User Grid
+        function renderUserGrid(filteredList = null) {
+            const grid = document.getElementById('appsGrid');
+            const emptyState = document.getElementById('emptyState');
+            const dataToRender = filteredList !== null ? filteredList : apps;
+
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            if (dataToRender.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            dataToRender.forEach(app => {
+                const card = document.createElement('div');
+                card.className = 'bg-slate-900 border border-slate-800/80 rounded-2xl p-6 hover:border-indigo-500/50 transition-all duration-300 flex flex-col justify-between group shadow-lg';
+                card.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="flex items-start justify-between">
+                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-600/20 to-violet-600/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center font-bold text-lg group-hover:scale-105 transition-transform">
+                                ${escapeHtml(app.title.charAt(0).toUpperCase())}
+                            </div>
+                            <span class="px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 text-[10px] font-medium border border-slate-700">Excellington</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-white group-hover:text-indigo-300 transition-colors">${escapeHtml(app.title)}</h3>
+                        <p class="text-slate-400 text-sm line-clamp-3 leading-relaxed">${escapeHtml(app.description)}</p>
+                    </div>
+                    <div class="pt-6 mt-6 border-t border-slate-800/80 flex items-center justify-between gap-3">
+                        <button onclick="openDetailModal('${escapeHtml(app.id)}')" class="text-xs font-semibold text-indigo-400 hover:text-indigo-300 flex items-center space-x-1.5 transition-colors cursor-pointer">
+                            <span>Saber Mais</span>
+                            <i class="fa-solid fa-chevron-right text-[10px] pointer-events-none"></i>
+                        </button>
+                        <a href="${escapeHtml(app.link)}" target="_blank" rel="noopener noreferrer" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition-all shadow-md shadow-indigo-600/20 flex items-center space-x-1.5">
+                            <span>Abrir</span>
+                            <i class="fa-solid fa-arrow-up-right-from-square text-[10px] pointer-events-none"></i>
+                        </a>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Filter apps based on search input
+        function filterApps() {
+            const searchInput = document.getElementById('searchInput');
+            if (!searchInput) return;
+            const query = searchInput.value.toLowerCase();
+            const filtered = apps.filter(app => 
+                app.title.toLowerCase().includes(query) || 
+                app.description.toLowerCase().includes(query)
+            );
+            renderUserGrid(filtered);
+        }
+
+        // Render Admin Table
+        function renderAdminTable() {
+            const tbody = document.getElementById('adminTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if (apps.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="py-8 text-center text-slate-500 text-sm">Nenhum aplicativo cadastrado no momento.</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            apps.forEach(app => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-800/50 transition-colors';
+                tr.innerHTML = `
+                    <td class="py-4 px-6 font-semibold text-white">${escapeHtml(app.title)}</td>
+                    <td class="py-4 px-6 text-indigo-400 font-mono text-xs max-w-xs truncate"><a href="${escapeHtml(app.link)}" target="_blank" class="hover:underline">${escapeHtml(app.link)}</a></td>
+                    <td class="py-4 px-6 text-slate-400 text-xs max-w-sm truncate">${escapeHtml(app.description)}</td>
+                    <td class="py-4 px-6 text-right space-x-2 whitespace-nowrap">
+                        <button onclick="openAppModal('${escapeHtml(app.id)}')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs rounded-lg font-medium transition-colors cursor-pointer" title="Editar">
+                            <i class="fa-solid fa-pen-to-square pointer-events-none"></i>
+                        </button>
+                        <button onclick="deleteApp('${escapeHtml(app.id)}')" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs rounded-lg font-medium transition-colors cursor-pointer" title="Excluir">
+                            <i class="fa-solid fa-trash pointer-events-none"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Modal Controls for Add/Edit
+        function openAppModal(id = null) {
+            const modal = document.getElementById('appModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const appId = document.getElementById('appId');
+            const titleInput = document.getElementById('appTitleInput');
+            const linkInput = document.getElementById('appLinkInput');
+            const descInput = document.getElementById('appDescInput');
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            if (id) {
+                const app = apps.find(a => a.id === id);
+                if (app) {
+                    modalTitle.textContent = 'Editar Utilitário';
+                    appId.value = app.id;
+                    titleInput.value = app.title;
+                    linkInput.value = app.link;
+                    descInput.value = app.description;
+                }
+            } else {
+                modalTitle.textContent = 'Adicionar Novo Utilitário';
+                appId.value = '';
+                titleInput.value = '';
+                linkInput.value = '';
+                descInput.value = '';
+            }
+        }
+
+        function closeAppModal() {
+            const modal = document.getElementById('appModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // Form Submit Handler (Add or Update)
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            const id = document.getElementById('appId').value;
+            const title = document.getElementById('appTitleInput').value.trim();
+            const link = document.getElementById('appLinkInput').value.trim();
+            const description = document.getElementById('appDescInput').value.trim();
+
+            if (!title || !link || !description) return;
+
+            if (id) {
+                // Update existing
+                apps = apps.map(app => app.id === id ? { id, title, link, description } : app);
+                showToast('Utilitário atualizado com sucesso!', 'success');
+            } else {
+                // Create new
+                const newApp = {
+                    id: Date.now().toString(),
+                    title,
+                    link,
+                    description
+                };
+                apps.push(newApp);
+                showToast('Novo utilitário adicionado com sucesso!', 'success');
+            }
+
+            saveApps();
+            closeAppModal();
+            renderAdminTable();
+            renderUserGrid();
+        }
+
+        // Delete App
+        function deleteApp(id) {
+            apps = apps.filter(app => app.id !== id);
+            saveApps();
+            renderAdminTable();
+            renderUserGrid();
+            showToast('Utilitário excluído com sucesso.', 'success');
+        }
+
+        // Detail Modal Controls
+        let currentDetailLink = '';
+        function openDetailModal(id) {
+            const app = apps.find(a => a.id === id);
+            if (!app) return;
+
+            document.getElementById('detailModalTitle').textContent = app.title;
+            document.getElementById('detailModalDesc').textContent = app.description;
+            document.getElementById('detailModalLinkText').textContent = app.link;
+            document.getElementById('detailModalBtn').href = app.link;
+            currentDetailLink = app.link;
+
+            const modal = document.getElementById('detailModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeDetailModal() {
+            const modal = document.getElementById('detailModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function copyDetailLink() {
+            const textArea = document.createElement('textarea');
+            textArea.value = currentDetailLink;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast('Link copiado para a área de transferência!', 'success');
+            } catch (err) {
+                showToast('Erro ao copiar link.', 'error');
+            }
+            document.body.removeChild(textArea);
+        }
+
+        // Exit Application function
+        function exitApplication() {
+            try {
+                window.close();
+            } catch (e) {
+                // Ignore
+            }
+            // Fallback: navigate to about:blank if window.close is blocked by browser security
+            window.location.href = "about:blank";
+        }
+
+        // Toast Notification System
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+
+            if (!toast) return;
+
+            toastMessage.textContent = message;
+            
+            if (type === 'success') {
+                toastIcon.className = 'fa-solid fa-circle-check text-emerald-400';
+            } else if (type === 'error') {
+                toastIcon.className = 'fa-solid fa-circle-exclamation text-rose-400';
+            } else {
+                toastIcon.className = 'fa-solid fa-circle-info text-indigo-400';
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+                toast.classList.remove('translate-y-0', 'opacity-100');
+            }, 3500);
+        }
+
+        // Helper to escape HTML to prevent XSS
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Initialize App on load
+        window.onload = function() {
+            renderUserGrid();
+        };
+    </script>
+</body>
+</html>
+```
