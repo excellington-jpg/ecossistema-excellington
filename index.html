@@ -40,7 +40,6 @@
 </head>
 <body class="h-full bg-slate-950 text-slate-100 flex flex-col font-sans antialiased selection:bg-indigo-500 selection:text-white">
 
-    <!-- Header Navbar -->
     <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             <div class="flex items-center space-x-3">
@@ -71,7 +70,6 @@
         </div>
     </header>
 
-    <!-- Main Content Container -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col">
 
         <!-- USER VIEW: Public Showcase -->
@@ -81,12 +79,12 @@
                 <div class="absolute -right-16 -top-16 w-64 h-64 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
                 <div class="space-y-3 max-w-2xl relative z-10 text-center md:text-left">
                     <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-xs font-semibold border border-indigo-500/20">
-                        <i class="fa-solid fa-sparkles"></i>
-                        <span>Repositório Aberto & Sincronizado</span>
+                        <i class="fa-solid fa-cloud-arrow-down"></i>
+                        <span>Sincronizado na Nuvem em Tempo Real</span>
                     </div>
                     <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Explore Nossos Utilitários</h2>
                     <p class="text-slate-400 text-sm sm:text-base leading-relaxed">
-                        Ferramentas e aplicativos selecionados do GitHub e disponibilizados para toda a comunidade em tempo real.
+                        Ferramentas e aplicativos do GitHub selecionados e compartilhados para toda a comunidade.
                     </p>
                 </div>
                 <div class="w-full md:w-80 relative z-10">
@@ -116,7 +114,6 @@
             </div>
         </div>
 
-        <!-- ADMIN VIEW: Secret Management Panel -->
         <div id="adminView" class="hidden flex-1 flex flex-col space-y-6">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/60 border border-slate-800 rounded-2xl p-6">
                 <div>
@@ -125,7 +122,7 @@
                         <span>Painel do Administrador</span>
                     </div>
                     <h2 class="text-2xl font-bold text-white">Gerenciar Utilitários</h2>
-                    <p class="text-slate-400 text-xs">Adicione, edite ou remova links do GitHub compartilhados com todos os usuários em tempo real.</p>
+                    <p class="text-slate-400 text-xs">Adicione, edite ou remova links do GitHub compartilhados com todos os usuários instantaneamente.</p>
                 </div>
                 <div class="flex items-center space-x-3">
                     <button onclick="switchView('user')" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-all flex items-center space-x-2 cursor-pointer border border-slate-700">
@@ -230,7 +227,6 @@
         </div>
     </div>
 
-    <!-- Application Logic Script -->
     <script>
         // Global state variables
         let db = null;
@@ -257,15 +253,19 @@
                 db = getFirestore(app);
                 auth = getAuth(app);
 
-                // Rule 3: Auth before queries
+                // Rule 3: Auth before queries - capture credential properly
+                let cred;
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
+                    cred = await signInWithCustomToken(auth, __initial_auth_token);
                 } else {
-                    await signInAnonymously(auth);
+                    cred = await signInAnonymously(auth);
                 }
 
-                user = auth.currentUser;
-                if (!user) return;
+                user = cred && cred.user ? cred.user : auth.currentUser;
+                if (!user) {
+                    console.warn("Firebase authentication user not established yet.");
+                    return;
+                }
 
                 // Rule 1: Strict public data path
                 const appsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'apps');
@@ -311,13 +311,6 @@
                     link: 'https://github.com/excellington',
                     description: 'Painel analítico principal para monitoramento de dados em tempo real.',
                     createdAt: Date.now()
-                },
-                {
-                    id: '2',
-                    title: 'CalcPro Financeiro',
-                    link: 'https://github.com/excellington',
-                    description: 'Calculadora avançada de juros compostos e projeções financeiras.',
-                    createdAt: Date.now()
                 }
             ];
             renderUserGrid();
@@ -328,7 +321,7 @@
             if (!user || !db) return;
             const { addDoc, collection } = window.firebaseModules;
             
-            // LISTA INICIAL DE APLICATIVOS QUE VOCÊ DESEJA COMPARTILHAR
+            // SUA LISTA INICIAL DE APLICATIVOS DO GITHUB
             const defaultAppsList = [
                 {
                     title: 'Excellington Dashboard',
@@ -554,19 +547,8 @@
 
             if (!title || !link || !description) return;
 
-            // If offline or Firestore not initialized yet
-            if (!user || !db) {
-                if (id) {
-                    const idx = apps.findIndex(a => a.id === id);
-                    if (idx !== -1) {
-                        apps[idx] = { ...apps[idx], title, link, description };
-                    }
-                } else {
-                    apps.push({ id: Date.now().toString(), title, link, description, createdAt: Date.now() });
-                }
-                renderUserGrid();
-                closeAppModal();
-                showToast('Utilitário salvo com sucesso (Modo Local)!', 'success');
+            if (!db) {
+                showToast('Erro: Banco de dados não conectado.', 'error');
                 return;
             }
 
@@ -604,13 +586,7 @@
 
         // Delete App from Firestore
         async function deleteApp(id) {
-            if (!user || !db) {
-                apps = apps.filter(a => a.id !== id);
-                renderUserGrid();
-                renderAdminTable();
-                showToast('Utilitário excluído.', 'success');
-                return;
-            }
+            if (!db) return;
 
             try {
                 const { doc, deleteDoc } = window.firebaseModules;
@@ -695,8 +671,6 @@
         window.onload = function() {
             if (!db && typeof window.initFirebase === 'function') {
                 window.initFirebase();
-            } else {
-                renderUserGrid();
             }
         };
     </script>
