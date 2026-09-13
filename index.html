@@ -239,17 +239,31 @@
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'excellington-public-apps';
         
+        // MANUALLY CONFIGURABLE FIREBASE CONFIG (For GitHub Pages / Static Hosting)
+        // If you host this on GitHub Pages, you can paste your Firebase project config here:
+        const manualFirebaseConfig = null; 
+        /* Example:
+        const manualFirebaseConfig = {
+            apiKey: "AIzaSy...",
+            authDomain: "seu-projeto.firebaseapp.com",
+            projectId: "seu-projeto",
+            storageBucket: "seu-projeto.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123:web:abc"
+        };
+        */
+
         let firebaseConfig = null;
         try {
-            firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+            firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : manualFirebaseConfig;
         } catch (e) {
-            firebaseConfig = null;
+            firebaseConfig = manualFirebaseConfig;
         }
 
-        // Initialize Firebase Firestore with automatic hybrid local fallback
+        // Initialize Firebase Firestore with automatic hybrid fallback
         async function initFirebase() {
             if (!firebaseConfig || !window.firebaseModules) {
-                console.warn("Firebase config not found. Running in robust offline hybrid mode.");
+                console.warn("Firebase config not found. Running in hybrid local mode.");
                 initHybridLocalMode();
                 return;
             }
@@ -350,7 +364,7 @@
             if (isCloudMode) {
                 showToast('Status: Conectado ao Banco de Dados na Nuvem (Firebase). Sincronização em tempo real ativa para todos os usuários!', 'success');
             } else {
-                showToast('Status: Rodando em modo local de contingência. Suas alterações estão salvas neste navegador.', 'info');
+                showToast('Status: Rodando em modo local. Para ativar nuvem real, configure o Firebase no código.', 'info');
             }
         }
 
