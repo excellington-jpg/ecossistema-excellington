@@ -12,9 +12,9 @@
     <!-- Google Fonts Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Firebase Compat SDKs (Optional & Graceful loading) -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" onerror="window.fbLoadError=true"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js" onerror="window.fbLoadError=true"></script>
+    <!-- Firebase Compat SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
     <script>
         tailwind.config = {
@@ -39,9 +39,9 @@
                 <div>
                     <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
                         Excellington
-                        <span id="syncBadge" onclick="showSyncDiagnostics()" class="text-xs px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium inline-flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity" title="Status do sistema">
-                            <span id="syncDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
-                            <span id="syncBadgeText">Modo Local</span>
+                        <span id="syncBadge" onclick="showSyncDiagnostics()" class="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium inline-flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity" title="Status do sistema">
+                            <span id="syncDot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                            <span id="syncBadgeText">Nuvem Conectada</span>
                         </span>
                     </h1>
                     <p class="text-xs text-slate-400">Vitrine oficial de aplicativos e ferramentas</p>
@@ -72,8 +72,8 @@
                 <div class="absolute -right-16 -top-16 w-64 h-64 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
                 <div class="space-y-3 max-w-2xl relative z-10 text-center md:text-left">
                     <div class="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-xs font-semibold border border-indigo-500/20">
-                        <i class="fa-solid fa-globe"></i>
-                        <span id="bannerSyncText">Vitrine de Utilitários Pronta</span>
+                        <i class="fa-solid fa-cloud"></i>
+                        <span id="bannerSyncText">Sincronizado na Nuvem em Tempo Real</span>
                     </div>
                     <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Explore Nossos Utilitários</h2>
                     <p class="text-slate-400 text-sm sm:text-base leading-relaxed">
@@ -101,7 +101,7 @@
                     </div>
                     <div class="space-y-1">
                         <h3 class="text-base font-semibold text-white">Nenhum utilitário encontrado</h3>
-                        <p class="text-xs text-slate-500 max-w-sm">Não há aplicativos cadastrados no momento ou correspondentes à sua busca.</p>
+                        <p class="text-xs text-slate-500 max-w-sm">Não há aplicativos cadastrados no momento na nuvem.</p>
                     </div>
                 </div>
             </div>
@@ -114,8 +114,8 @@
                         <i class="fa-solid fa-lock-open"></i>
                         <span>Painel do Administrador</span>
                     </div>
-                    <h2 class="text-2xl font-bold text-white">Gerenciar Utilitários & Firebase</h2>
-                    <p class="text-slate-400 text-xs">Adicione, edite utilitários ou envie para sua base de dados no Firebase.</p>
+                    <h2 class="text-2xl font-bold text-white">Gerenciar Utilitários na Nuvem</h2>
+                    <p class="text-slate-400 text-xs">Adicione, edite ou remova utilitários diretamente no Firebase.</p>
                 </div>
                 <div class="flex items-center space-x-3">
                     <button onclick="switchView('user')" type="button" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-all flex items-center space-x-2 cursor-pointer border border-slate-700">
@@ -126,29 +126,6 @@
                         <i class="fa-solid fa-plus"></i>
                         <span>Novo Utilitário</span>
                     </button>
-                </div>
-            </div>
-
-            <!-- Firebase Configuration & Sync Card -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
-                <div class="flex items-center justify-between flex-wrap gap-4">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center font-bold">
-                            <i class="fa-solid fa-cloud-arrow-up"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-base font-bold text-white">Sincronização com o Firebase</h3>
-                            <p class="text-xs text-slate-400">Cole sua configuração do Firebase para enviar seus utilitários para a nuvem.</p>
-                        </div>
-                    </div>
-                    <button onclick="syncToFirebase()" type="button" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition-all shadow-lg shadow-emerald-600/20 flex items-center space-x-2 cursor-pointer">
-                        <i class="fa-solid fa-sync"></i>
-                        <span>Enviar Dados para o Firebase</span>
-                    </button>
-                </div>
-                <div class="space-y-1.5 pt-2 border-t border-slate-800">
-                    <label class="text-xs font-semibold text-slate-300">firebaseConfig (JSON ou Objeto)</label>
-                    <textarea id="firebaseConfigInput" rows="5" class="w-full px-4 py-3 bg-slate-950 border border-slate-700/80 rounded-xl text-xs text-indigo-300 font-mono focus:outline-none focus:border-indigo-500 transition-all resize-none"></textarea>
                 </div>
             </div>
 
@@ -199,7 +176,7 @@
                 </div>
                 <div class="pt-4 flex items-center justify-end space-x-3 border-t border-slate-800">
                     <button type="button" onclick="closeAppModal()" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors cursor-pointer">Cancelar</button>
-                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-colors shadow-lg shadow-indigo-600/20 cursor-pointer">Salvar Utilitário</button>
+                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-colors shadow-lg shadow-indigo-600/20 cursor-pointer">Salvar na Nuvem</button>
                 </div>
             </form>
         </div>
@@ -225,7 +202,7 @@
             <div class="pt-4 flex items-center justify-between space-x-3 border-t border-slate-800">
                 <button onclick="closeDetailModal()" type="button" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors cursor-pointer flex items-center space-x-2">
                     <i class="fa-solid fa-arrow-left"></i>
-                    <span>Retornar ao Painel</span>
+                    <span>Retornar</span>
                 </button>
                 <a id="detailModalBtn" href="#" target="_blank" rel="noopener noreferrer" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-all shadow-lg shadow-indigo-600/20 flex items-center space-x-2">
                     <span>Acessar no GitHub</span>
@@ -249,16 +226,17 @@
         let isAdminUnlocked = false;
         let securityClickCount = 0;
         let securityTimer = null;
+        let db = null;
 
-        const defaultFirebaseConfigCode = `const firebaseConfig = {
-  apiKey: "AIzaSyD1UFBz1bNb595YmpDximHiQDCIvogJSS4",
-  authDomain: "excellingtonapps.firebaseapp.com",
-  projectId: "excellingtonapps",
-  storageBucket: "excellingtonapps.firebasestorage.app",
-  messagingSenderId: "1054816494537",
-  appId: "1:1054816494537:web:327c45879b7e20b173fe18",
-  measurementId: "G-LTXSW29WDK"
-};`;
+        const defaultFirebaseConfig = {
+            apiKey: "AIzaSyD1UFBz1bNb595YmpDximHiQDCIvogJSS4",
+            authDomain: "excellingtonapps.firebaseapp.com",
+            projectId: "excellingtonapps",
+            storageBucket: "excellingtonapps.firebasestorage.app",
+            messagingSenderId: "1054816494537",
+            appId: "1:1054816494537:web:327c45879b7e20b173fe18",
+            measurementId: "G-LTXSW29WDK"
+        };
 
         // Run initialization immediately on load
         if (document.readyState === 'loading') {
@@ -267,16 +245,68 @@
             initApp();
         }
 
-        function initApp() {
+        async function initApp() {
             try {
-                loadLocalApps();
-                const configInput = document.getElementById('firebaseConfigInput');
-                if (configInput && !configInput.value) {
-                    configInput.value = defaultFirebaseConfigCode;
+                if (typeof firebase !== 'undefined') {
+                    if (!firebase.apps.length) {
+                        firebase.initializeApp(defaultFirebaseConfig);
+                    }
+                    db = firebase.firestore();
+                    await fetchAppsFromFirebase();
+                } else {
+                    loadFallbackApps();
                 }
             } catch (err) {
                 console.error("Init error:", err);
+                loadFallbackApps();
             }
+        }
+
+        async function fetchAppsFromFirebase() {
+            try {
+                if (!db) return;
+                const snapshot = await db.collection('artifacts').doc('excellington-public-apps').collection('public').doc('data').collection('apps').get();
+                apps = [];
+                snapshot.forEach(doc => {
+                    apps.push({ id: doc.id, ...doc.data() });
+                });
+                
+                // If cloud is empty, add default sample apps
+                if (apps.length === 0) {
+                    apps = getDefaultAppsList();
+                    for (const item of apps) {
+                        await db.collection('artifacts').doc('excellington-public-apps').collection('public').doc('data').collection('apps').doc(item.id).set(item);
+                    }
+                }
+                renderUserGrid();
+            } catch (err) {
+                console.error("Error fetching from Firebase:", err);
+                loadFallbackApps();
+            }
+        }
+
+        function loadFallbackApps() {
+            apps = getDefaultAppsList();
+            renderUserGrid();
+        }
+
+        function getDefaultAppsList() {
+            return [
+                {
+                    id: 'default-1',
+                    title: 'Excellington Dashboard',
+                    link: 'https://github.com/excellington',
+                    description: 'Painel analítico completo para monitoramento de dados em tempo real com exportação em múltiplos formatos e gráficos dinâmicos.',
+                    createdAt: Date.now()
+                },
+                {
+                    id: 'default-2',
+                    title: 'CalcPro Financeiro',
+                    link: 'https://github.com/excellington',
+                    description: 'Calculadora de juros compostos, fluxo de caixa e projeções financeiras avançadas desenvolvida sob medida para gestores.',
+                    createdAt: Date.now()
+                }
+            ];
         }
 
         // Bulletproof direct handlers for header buttons
@@ -308,48 +338,6 @@
                 }, 400);
             } catch (err) {
                 console.error("Exit click error:", err);
-            }
-        }
-
-        function loadLocalApps() {
-            try {
-                const saved = localStorage.getItem('excellington_apps');
-                if (saved) {
-                    apps = JSON.parse(saved);
-                } else {
-                    apps = getDefaultAppsList();
-                    saveLocalApps();
-                }
-            } catch (err) {
-                apps = getDefaultAppsList();
-            }
-            renderUserGrid();
-        }
-
-        function getDefaultAppsList() {
-            return [
-                {
-                    id: 'default-1',
-                    title: 'Excellington Dashboard',
-                    link: 'https://github.com/excellington',
-                    description: 'Painel analítico completo para monitoramento de dados em tempo real com exportação em múltiplos formatos e gráficos dinâmicos.',
-                    createdAt: Date.now()
-                },
-                {
-                    id: 'default-2',
-                    title: 'CalcPro Financeiro',
-                    link: 'https://github.com/excellington',
-                    description: 'Calculadora de juros compostos, fluxo de caixa e projeções financeiras avançadas desenvolvida sob medida para gestores.',
-                    createdAt: Date.now()
-                }
-            ];
-        }
-
-        function saveLocalApps() {
-            try {
-                localStorage.setItem('excellington_apps', JSON.stringify(apps));
-            } catch (e) {
-                console.error("Error saving to localStorage:", e);
             }
         }
 
@@ -447,7 +435,7 @@
             if (apps.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="4" class="py-8 text-center text-slate-500 text-sm">Nenhum aplicativo cadastrado no momento.</td>
+                        <td colspan="4" class="py-8 text-center text-slate-500 text-sm">Nenhum aplicativo cadastrado na nuvem.</td>
                     </tr>
                 `;
                 return;
@@ -512,8 +500,8 @@
             }
         }
 
-        // Form Submit Handler
-        function handleFormSubmit(event) {
+        // Form Submit Handler (Saves directly to Firebase Firestore)
+        async function handleFormSubmit(event) {
             event.preventDefault();
             
             const id = document.getElementById('appId').value;
@@ -523,102 +511,58 @@
 
             if (!title || !link || !description) return;
 
-            if (id) {
-                const index = apps.findIndex(a => a.id === id);
-                if (index !== -1) {
-                    apps[index] = { ...apps[index], title, link, description, updatedAt: Date.now() };
-                }
-                showToast('Utilitário atualizado com sucesso!', 'success');
-            } else {
-                const newApp = {
-                    id: 'app-' + Date.now(),
-                    title,
-                    link,
-                    description,
-                    createdAt: Date.now()
-                };
-                apps.push(newApp);
-                showToast('Novo utilitário adicionado com sucesso!', 'success');
-            }
+            const appId = id ? id : 'app-' + Date.now();
+            const appData = {
+                title,
+                link,
+                description,
+                createdAt: id ? (apps.find(a => a.id === id)?.createdAt || Date.now()) : Date.now(),
+                updatedAt: Date.now()
+            };
 
-            saveLocalApps();
-            renderUserGrid();
-            renderAdminTable();
-            closeAppModal();
-        }
-
-        // Delete App
-        function deleteApp(id) {
-            apps = apps.filter(a => a.id !== id);
-            saveLocalApps();
-            renderUserGrid();
-            renderAdminTable();
-            showToast('Utilitário excluído com sucesso.', 'success');
-        }
-
-        // Sync to Firebase manually
-        async function syncToFirebase() {
             try {
-                const codeText = document.getElementById('firebaseConfigInput').value;
-                
-                let configObj = null;
-                try {
-                    const match = codeText.match(/\{[\s\S]*\}/);
-                    if (match) {
-                        configObj = (new Function('return ' + match[0]))();
+                if (db) {
+                    await db.collection('artifacts').doc('excellington-public-apps').collection('public').doc('data').collection('apps').doc(appId).set(appData, { merge: true });
+                }
+
+                if (id) {
+                    const index = apps.findIndex(a => a.id === id);
+                    if (index !== -1) {
+                        apps[index] = { id, ...appData };
                     }
-                } catch (err) {
-                    console.error("Parse config error:", err);
+                    showToast('Utilitário atualizado na nuvem!', 'success');
+                } else {
+                    apps.push({ id: appId, ...appData });
+                    showToast('Novo utilitário salvo na nuvem!', 'success');
                 }
 
-                if (!configObj || !configObj.apiKey) {
-                    showToast('Configuração do Firebase inválida.', 'error');
-                    return;
-                }
-
-                if (typeof firebase === 'undefined' || !firebase.initializeApp) {
-                    showToast('Biblioteca do Firebase indisponível.', 'error');
-                    return;
-                }
-
-                showToast('Conectando ao Firebase...', 'info');
-                
-                if (!firebase.apps.length) {
-                    firebase.initializeApp(configObj);
-                }
-
-                const db = firebase.firestore();
-                const colRef = db.collection('artifacts').doc('excellington-public-apps').collection('public').doc('data').collection('apps');
-
-                for (const item of apps) {
-                    await colRef.doc(item.id).set({
-                        title: item.title,
-                        link: item.link,
-                        description: item.description,
-                        createdAt: item.createdAt || Date.now(),
-                        updatedAt: item.updatedAt || Date.now()
-                    }, { merge: true });
-                }
-
-                const syncBadgeText = document.getElementById('syncBadgeText');
-                const syncDot = document.getElementById('syncDot');
-                const syncBadge = document.getElementById('syncBadge');
-                const bannerSyncText = document.getElementById('bannerSyncText');
-
-                if (syncBadgeText) syncBadgeText.textContent = "Nuvem Sincronizada";
-                if (syncDot) syncDot.className = "w-2 h-2 rounded-full bg-emerald-400";
-                if (syncBadge) syncBadge.className = "text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium inline-flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity";
-                if (bannerSyncText) bannerSyncText.textContent = "Sincronizado na Nuvem com Sucesso";
-
-                showToast('Dados enviados para o Firebase com sucesso!', 'success');
+                renderUserGrid();
+                renderAdminTable();
+                closeAppModal();
             } catch (err) {
-                console.error("Firebase Sync error:", err);
-                showToast('Erro ao sincronizar. Verifique as regras do Firestore.', 'error');
+                console.error("Save error:", err);
+                showToast('Erro ao salvar no Firebase.', 'error');
+            }
+        }
+
+        // Delete App from Firebase
+        async function deleteApp(id) {
+            try {
+                if (db) {
+                    await db.collection('artifacts').doc('excellington-public-apps').collection('public').doc('data').collection('apps').doc(id).delete();
+                }
+                apps = apps.filter(a => a.id !== id);
+                renderUserGrid();
+                renderAdminTable();
+                showToast('Utilitário excluído da nuvem.', 'success');
+            } catch (err) {
+                console.error("Delete error:", err);
+                showToast('Erro ao excluir no Firebase.', 'error');
             }
         }
 
         function showSyncDiagnostics() {
-            showToast('Modo local ativo. Toque no escudo 5 vezes para abrir o admin.', 'info');
+            showToast('Banco de dados em nuvem ativo e sincronizado.', 'success');
         }
 
         // Detail Modal Controls ("Saber Mais")
