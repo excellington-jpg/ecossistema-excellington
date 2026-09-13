@@ -1,666 +1,660 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR" class="h-full">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Excellington - Utilitários Excelentes</title>
-<!-- Tailwind CSS CDN -->
-<script src="https://cdn.tailwindcss.com"></script>
-<!-- FontAwesome for Icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<!-- Google Fonts Inter -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getFirestore, doc, addDoc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-​window.firebaseModules = {
-initializeApp, getFirestore, doc, addDoc, setDoc, deleteDoc, onSnapshot, collection
-};
-​window.dispatchEvent(new Event('firebase-modules-ready'));
-</script>
-<script>
-tailwind.config = {
-theme: {
-extend: {
-fontFamily: {
-sans: ['Inter', 'sans-serif'],
-},
-}
-}
-}
-</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excellington - Utilitários Excelentes</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, setDoc, deleteDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        window.firebaseModules = {
+            initializeApp, getFirestore, collection, addDoc, getDocs, doc, setDoc, deleteDoc
+        };
+        window.dispatchEvent(new Event('firebase-modules-ready'));
+    </script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
 </head>
 <body class="h-full bg-slate-950 text-slate-100 flex flex-col font-sans antialiased selection:bg-indigo-500 selection:text-white">
-​<header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-<div class="flex items-center space-x-3">
-<div class="w-10 h-10 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold text-xl shadow-lg shadow-indigo-600/10">
-E
-</div>
-<div>
-<h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-Excellington
-<span id="syncBadge" onclick="showSyncDiagnostics()" class="text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium hidden sm:inline-flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity" title="Clique para verificar o status da sincronização">
-<span id="syncDot" class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-<span id="syncBadgeText">Modo Local</span>
-</span>
-</h1>
-<p class="text-xs text-slate-400">Vitrine oficial de aplicativos e ferramentas</p>
-</div>
-</div>
-​<div class="flex items-center space-x-3">
-<!-- Secret Security Icon (5 clicks required to unlock admin) -->
-<button id="securityIcon" type="button" class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-indigo-400 transition-all flex items-center justify-center cursor-pointer shadow-sm focus:outline-none">
-<i class="fa-solid fa-shield-halved text-sm pointer-events-none"></i>
-</button>
-​<!-- Exit Browser Button -->
-<button id="exitBtn" type="button" class="px-4 py-2.5 rounded-xl bg-rose-600/10 hover:bg-rose-600/20 text-rose-400 border border-rose-500/20 text-xs font-semibold transition-all flex items-center space-x-2 cursor-pointer shadow-sm focus:outline-none">
-<i class="fa-solid fa-power-off pointer-events-none"></i>
-<span class="hidden sm:inline">SAIR</span>
-</button>
-</div>
-</div>
-</header>
-​<main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col">
-​<!-- USER VIEW: Public Showcase -->
-<div id="userView" class="flex-1 flex flex-col space-y-8">
-<!-- Hero Banner & Search -->
-<div class="bg-gradient-to-br from-indigo-950/40 via-slate-900 to-slate-900 border border-slate-800/80 rounded-3xl p-8 sm:p-12 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
-<div class="absolute -right-16 -top-16 w-64 h-64 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
-<div class="space-y-3 max-w-2xl relative z-10 text-center md:text-left">
-<div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-xs font-semibold border border-indigo-500/20">
-<i class="fa-solid fa-cloud-arrow-down"></i>
-<span id="bannerSyncText">Carregando Utilitários...</span>
-</div>
-<h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Explore Nossos Utilitários</h2>
-<p class="text-slate-400 text-sm sm:text-base leading-relaxed">
-Ferramentas e aplicativos selecionados e compartilhados para toda a comunidade.
-</p>
-</div>
-<div class="w-full md:w-80 relative z-10">
-<div class="relative">
-<i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm pointer-events-none"></i>
-<input type="text" id="searchInput" oninput="filterApps()" placeholder="Buscar aplicativo..." class="w-full pl-11 pr-4 py-3.5 bg-slate-950/80 border border-slate-700/80 rounded-2xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all shadow-inner">
-</div>
-</div>
-</div>
-​<!-- Apps Grid -->
-<div class="flex-1">
-<div id="appsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-<!-- Dynamic cards injected here -->
-</div>
-​<!-- Empty State -->
-<div id="emptyState" class="hidden flex flex-col items-center justify-center py-20 text-center space-y-4">
-<div class="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-600 text-2xl">
-<i class="fa-solid fa-folder-open"></i>
-</div>
-<div class="space-y-1">
-<h3 class="text-base font-semibold text-white">Nenhum utilitário encontrado</h3>
-<p class="text-xs text-slate-500 max-w-sm">Não há aplicativos cadastrados no momento ou correspondentes à sua busca.</p>
-</div>
-</div>
-</div>
-</div>
-​<!-- ADMIN VIEW: Restricted Management Panel -->
-<div id="adminView" class="hidden flex-1 flex flex-col space-y-6">
-<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/60 border border-slate-800 rounded-2xl p-6">
-<div>
-<div class="flex items-center space-x-2 text-indigo-400 text-xs font-semibold mb-1">
-<i class="fa-solid fa-lock-open"></i>
-<span>Painel do Administrador</span>
-</div>
-<h2 class="text-2xl font-bold text-white">Gerenciar Utilitários</h2>
-<p class="text-slate-400 text-xs">Adicione, edite ou remova links compartilhados com todos os usuários instantaneamente.</p>
-</div>
-<div class="flex items-center space-x-3">
-<button onclick="switchView('user')" type="button" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-all flex items-center space-x-2 cursor-pointer border border-slate-700">
-<i class="fa-solid fa-arrow-left pointer-events-none"></i>
-<span>Voltar para a Vitrine</span>
-</button>
-<button onclick="openAppModal()" type="button" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-all shadow-lg shadow-indigo-600/20 flex items-center space-x-2 cursor-pointer">
-<i class="fa-solid fa-plus pointer-events-none"></i>
-<span>Novo Utilitário</span>
-</button>
-</div>
-</div>
-​<!-- Admin Table Container -->
-<div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-<div class="overflow-x-auto">
-<table class="w-full text-left border-collapse">
-<thead>
-<tr class="border-b border-slate-800 bg-slate-950/60 text-slate-400 text-xs font-semibold uppercase tracking-wider">
-<th class="py-4 px-6">Título</th>
-<th class="py-4 px-6">Endereço (Link)</th>
-<th class="py-4 px-6">Descrição</th>
-<th class="py-4 px-6 text-right">Ações</th>
-</tr>
-</thead>
-<tbody id="adminTableBody" class="divide-y divide-slate-800/80 text-sm">
-<!-- Dynamic rows injected here -->
-</tbody>
-</table>
-</div>
-</div>
-</div>
-​</main>
-​<!-- App Add/Edit Modal -->
-<div id="appModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
-<div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-6">
-<div class="flex items-center justify-between border-b border-slate-800 pb-4">
-<h3 id="modalTitle" class="text-lg font-bold text-white">Adicionar Novo Utilitário</h3>
-<button onclick="closeAppModal()" type="button" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 flex items-center justify-center transition-colors cursor-pointer">
-<i class="fa-solid fa-xmark"></i>
-</button>
-</div>
-<form id="appForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
-<input type="hidden" id="appId">
-<div class="space-y-1.5">
-<label class="text-xs font-semibold text-slate-300">Título do Aplicativo</label>
-<input type="text" id="appTitleInput" required placeholder="Ex: CalcPro Financeiro" class="w-full px-4 py-3 bg-slate-950 border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-all">
-</div>
-<div class="space-y-1.5">
-<label class="text-xs font-semibold text-slate-300">Endereço de Link</label>
-<input type="url" id="appLinkInput" required placeholder="https://github.com/usuario/repositorio" class="w-full px-4 py-3 bg-slate-950 border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-all font-mono text-xs">
-</div>
-<div class="space-y-1.5">
-<label class="text-xs font-semibold text-slate-300">Informações de Divulgação</label>
-<textarea id="appDescInput" required rows="4" placeholder="Descreva os recursos e utilidades do aplicativo..." class="w-full px-4 py-3 bg-slate-950 border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-all resize-none"></textarea>
-</div>
-<div class="pt-4 flex items-center justify-end space-x-3 border-t border-slate-800">
-<button type="button" onclick="closeAppModal()" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors cursor-pointer">Cancelar</button>
-<button type="submit" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-colors shadow-lg shadow-indigo-600/20 cursor-pointer">Salvar Utilitário</button>
-</div>
-</form>
-</div>
-</div>
-​<!-- Detail Modal ("Saber Mais") -->
-<div id="detailModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
-<div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-6">
-<div class="flex items-center justify-between border-b border-slate-800 pb-4">
-<div class="flex items-center space-x-3">
-<div class="w-10 h-10 rounded-xl bg-indigo-600/20 text-indigo-400 border border-indigo-500/20 flex items-center justify-center font-bold">
-<i class="fa-solid fa-circle-info"></i>
-</div>
-<h3 id="detailModalTitle" class="text-lg font-bold text-white">Detalhes do Utilitário</h3>
-</div>
-<button onclick="closeDetailModal()" type="button" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 flex items-center justify-center transition-colors cursor-pointer">
-<i class="fa-solid fa-xmark"></i>
-</button>
-</div>
-<div class="space-y-4">
-<p id="detailModalDesc" class="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap bg-slate-950/50 p-4 rounded-2xl border border-slate-800/80"></p>
-</div>
-<div class="pt-4 flex items-center justify-between space-x-3 border-t border-slate-800">
-<button onclick="closeDetailModal()" type="button" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors cursor-pointer flex items-center space-x-2">
-<i class="fa-solid fa-arrow-left"></i>
-<span>Retornar ao Painel</span>
-</button>
-<a id="detailModalBtn" href="#" target="_blank" rel="noopener noreferrer" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-all shadow-lg shadow-indigo-600/20 flex items-center space-x-2">
-<span>Acessar no GitHub</span>
-<i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
-</a>
-</div>
-</div>
-</div>
-​<!-- Toast Notification System -->
-<div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
-<div id="toastContent" class="bg-slate-900 border border-slate-700 text-slate-200 px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3 text-sm">
-<i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
-<span id="toastMessage">Mensagem de alerta</span>
-</div>
-</div>
-​<script>
-// Global state variables
-let db = null;
-let apps = [];
-let isAdminUnlocked = false;
-let isCloudMode = false;
-let securityClickCount = 0;
-let securityTimer = null;
-​const appId = typeof __app_id !== 'undefined' ? __app_id : 'excellington-public-apps';
-​// =========================================================================
-// SUA CONFIGURAÇÃO DO FIREBASE (Inserida com sucesso):
-// =========================================================================
-const manualFirebaseConfig = {
-apiKey: "AIzaSyD1UFBz1bNb595YmpDximHiQDCIvogJSS4",
-authDomain: "excellingtonapps.firebaseapp.com",
-projectId: "excellingtonapps",
-storageBucket: "excellingtonapps.firebasestorage.app",
-messagingSenderId: "1054816494537",
-appId: "1:1054816494537:web:327c45879b7e20b173fe18",
-measurementId: "G-LTXSW29WDK"
-};
-​let firebaseConfig = null;
-try {
-firebaseConfig = (typeof __firebase_config !== 'undefined' && __firebase_config) ? JSON.parse(__firebase_config) : (manualFirebaseConfig.apiKey ? manualFirebaseConfig : null);
-} catch (e) {
-firebaseConfig = manualFirebaseConfig.apiKey ? manualFirebaseConfig : null;
-}
-​// Initialize UI event listeners immediately on script load so buttons never fail
-if (document.readyState === 'loading') {
-document.addEventListener('DOMContentLoaded', initApp);
-} else {
-initApp();
-}
-​function initApp() {
-setupHeaderButtons();
-initHybridLocalMode();
-}
-​function setupHeaderButtons() {
-// Security icon (5 clicks for admin) - completely silent unlock
-const secIcon = document.getElementById('securityIcon');
-if (secIcon) {
-secIcon.onclick = null; // Clear old handlers
-secIcon.addEventListener('click', () => {
-securityClickCount++;
-clearTimeout(securityTimer);
-if (securityClickCount >= 5) {
-securityClickCount = 0;
-unlockAdmin();
-} else {
-securityTimer = setTimeout(() => {
-securityClickCount = 0;
-}, 2500);
-}
-});
-}
-​// Exit button - safe exit / reload fallback
-const exitBtn = document.getElementById('exitBtn');
-if (exitBtn) {
-exitBtn.onclick = null;
-exitBtn.addEventListener('click', () => {
-showToast('Encerrando sessão...', 'info');
-setTimeout(() => {
-try {
-window.close();
-} catch (e) {}
-window.location.href = 'about:blank';
-}, 400);
-});
-}
-}
-​// Initialize hybrid local mode instantly, then attempt cloud connection in background
-function initHybridLocalMode() {
-isCloudMode = false;
-updateSyncBadge(false);
-​const saved = localStorage.getItem('excellington_apps');
-if (saved) {
-try {
-apps = JSON.parse(saved);
-} catch (err) {
-apps = getDefaultAppsList();
-}
-} else {
-apps = getDefaultAppsList();
-saveLocalApps();
-}
-​renderUserGrid();
-if (!document.getElementById('adminView').classList.contains('hidden')) {
-renderAdminTable();
-}
-​// Attempt Firebase initialization in background without blocking UI
-setTimeout(() => {
-initFirebase();
-}, 250);
-}
-​// Initialize Firebase Firestore directly (bypassing auth restrictions)
-async function initFirebase() {
-if (!firebaseConfig || !firebaseConfig.apiKey || !window.firebaseModules) {
-console.log("Running in hybrid local mode.");
-return;
-}
-​try {
-const { initializeApp, getFirestore, onSnapshot, collection, addDoc } = window.firebaseModules;
-​const app = initializeApp(firebaseConfig);
-db = getFirestore(app);
-​if (!db) {
-throw new Error("Firestore instance could not be created.");
-}
-​isCloudMode = true;
-updateSyncBadge(true);
-​const appsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'apps');
-​onSnapshot(appsCollectionRef, async (snapshot) => {
-const loadedApps = [];
-snapshot.forEach((docSnap) => {
-loadedApps.push({ id: docSnap.id, ...docSnap.data() });
-});
-​// Check if local storage has data to migrate to Firebase
-const localSaved = localStorage.getItem('excellington_apps');
-let localApps = [];
-try { localApps = localSaved ? JSON.parse(localSaved) : []; } catch (err) { localApps = []; }
-​if (loadedApps.length === 0 && localApps.length > 0) {
-try {
-for (const localApp of localApps) {
-await addDoc(appsCollectionRef, {
-title: localApp.title,
-link: localApp.link,
-description: localApp.description,
-createdAt: localApp.createdAt || Date.now()
-});
-}
-localStorage.removeItem('excellington_apps');
-showToast('Seus dados salvos localmente foram migrados para a nuvem com sucesso!', 'success');
-return;
-} catch (migrationErr) {
-console.error("Migration error:", migrationErr);
-}
-}
-​if (loadedApps.length === 0 && localApps.length === 0) {
-seedDefaultApps();
-} else if (loadedApps.length > 0) {
-apps = loadedApps;
-renderUserGrid();
-if (!document.getElementById('adminView').classList.contains('hidden')) {
-renderAdminTable();
-}
-}
-}, (error) => {
-console.warn("Firestore snapshot warning (keeping local fallback):", error);
-});
-​} catch (e) {
-console.warn("Firebase cloud connection warning, keeping local fallback active:", e);
-isCloudMode = false;
-updateSyncBadge(false);
-}
-}
-​function updateSyncBadge(cloudActive) {
-const badgeText = document.getElementById('syncBadgeText');
-const badge = document.getElementById('syncBadge');
-const syncDot = document.getElementById('syncDot');
-const bannerText = document.getElementById('bannerSyncText');
-if (!badgeText || !badge) return;
-​badge.classList.remove('hidden');
-if (cloudActive) {
-badgeText.textContent = "Nuvem Conectada";
-if (syncDot) syncDot.className = "w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse";
-if (bannerText) bannerText.textContent = "Sincronizado na Nuvem em Tempo Real";
-badge.className = "text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium inline-flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity";
-} else {
-badgeText.textContent = "Modo Local";
-if (syncDot) syncDot.className = "w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse";
-if (bannerText) bannerText.textContent = "Modo Local Ativo";
-badge.className = "text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium inline-flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity";
-}
-}
-​function showSyncDiagnostics() {
-if (isCloudMode) {
-showToast('Status: Conectado ao Banco de Dados na Nuvem (Firebase). Sincronização ativa!', 'success');
-} else {
-showToast('Status: Modo local ativo. (Dados salvos no seu navegador).', 'info');
-}
-}
-​window.addEventListener('firebase-modules-ready', () => {});
-​function getDefaultAppsList() {
-return [
-{
-id: 'default-1',
-title: 'Excellington Dashboard',
-link: 'https://github.com/excellington',
-description: 'Painel analítico completo para monitoramento de dados em tempo real com exportação em múltiplos formatos e gráficos dinâmicos.',
-createdAt: Date.now()
-},
-{
-id: 'default-2',
-title: 'CalcPro Financeiro',
-link: 'https://github.com/excellington',
-description: 'Calculadora de juros compostos, fluxo de caixa e projeções financeiras avançadas desenvolvida sob medida para gestores.',
-createdAt: Date.now()
-}
-];
-}
-​async function seedDefaultApps() {
-if (!isCloudMode || !db) return;
-​const { addDoc, collection } = window.firebaseModules;
-const defaultAppsList = getDefaultAppsList().map(item => ({
-title: item.title,
-link: item.link,
-description: item.description,
-createdAt: item.createdAt
-}));
-​try {
-const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'apps');
-for (const app of defaultAppsList) {
-await addDoc(colRef, app);
-}
-} catch (e) {
-console.error("Error seeding default apps:", e);
-}
-}
-​function saveLocalApps() {
-try {
-localStorage.setItem('excellington_apps', JSON.stringify(apps));
-} catch (e) {
-console.error("Error saving to localStorage:", e);
-}
-}
-​function unlockAdmin() {
-isAdminUnlocked = true;
-showToast('Painel do administrador liberado!', 'success');
-switchView('admin');
-}
-​function switchView(viewName) {
-const userView = document.getElementById('userView');
-const adminView = document.getElementById('adminView');
-​if (viewName === 'admin') {
-if (!isAdminUnlocked) {
-showToast('Acesso restrito. Toque no ícone de segurança 5 vezes.', 'error');
-return;
-}
-userView.classList.add('hidden');
-adminView.classList.remove('hidden');
-renderAdminTable();
-} else {
-isAdminUnlocked = false;
-adminView.classList.add('hidden');
-userView.classList.remove('hidden');
-renderUserGrid();
-}
-}
-​// Render User Grid
-function renderUserGrid(filteredList = null) {
-const grid = document.getElementById('appsGrid');
-const emptyState = document.getElementById('emptyState');
-const dataToRender = filteredList !== null ? filteredList : apps;
-​if (!grid) return;
-grid.innerHTML = '';
-​if (dataToRender.length === 0) {
-emptyState.classList.remove('hidden');
-return;
-} else {
-emptyState.classList.add('hidden');
-}
-​dataToRender.forEach(app => {
-const card = document.createElement('div');
-card.className = 'bg-slate-900 border border-slate-800/80 rounded-2xl p-6 hover:border-indigo-500/50 transition-all duration-300 flex flex-col justify-between group shadow-lg';
-card.innerHTML = <div class="space-y-3"> <div class="flex items-start justify-between"> <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-600/20 to-violet-600/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center font-bold text-lg group-hover:scale-105 transition-transform"> ${escapeHtml(app.title.charAt(0).toUpperCase())} </div> <span class="px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 text-[10px] font-medium border border-slate-700">GitHub</span> </div> <h3 class="text-lg font-bold text-white group-hover:text-indigo-300 transition-colors">${escapeHtml(app.title)}</h3> <p class="text-slate-400 text-sm line-clamp-3 leading-relaxed">${escapeHtml(app.description)}</p> </div> <div class="pt-6 mt-6 border-t border-slate-800/80 flex items-center justify-between gap-3"> <button onclick="openDetailModal('${escapeHtml(app.id)}')" type="button" class="text-xs font-semibold text-indigo-400 hover:text-indigo-300 flex items-center space-x-1.5 transition-colors cursor-pointer"> <span>Saber Mais</span> <i class="fa-solid fa-chevron-right text-[10px] pointer-events-none"></i> </button> <a href="${escapeHtml(app.link)}" target="_blank" rel="noopener noreferrer" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition-all shadow-md shadow-indigo-600/20 flex items-center space-x-1.5"> <span>Abrir</span> <i class="fa-solid fa-arrow-up-right-from-square text-[10px] pointer-events-none"></i> </a> </div>;
-grid.appendChild(card);
-});
-}
-​// Filter apps based on search input
-function filterApps() {
-const searchInput = document.getElementById('searchInput');
-if (!searchInput) return;
-const query = searchInput.value.toLowerCase();
-const filtered = apps.filter(app =>
-app.title.toLowerCase().includes(query) ||
-app.description.toLowerCase().includes(query)
-);
-renderUserGrid(filtered);
-}
-​// Render Admin Table
-function renderAdminTable() {
-const tbody = document.getElementById('adminTableBody');
-if (!tbody) return;
-tbody.innerHTML = '';
-​if (apps.length === 0) {
-tbody.innerHTML = <tr> <td colspan="4" class="py-8 text-center text-slate-500 text-sm">Nenhum aplicativo cadastrado no momento.</td> </tr>;
-return;
-}
-​apps.forEach(app => {
-const tr = document.createElement('tr');
-tr.className = 'hover:bg-slate-800/50 transition-colors';
-tr.innerHTML = <td class="py-4 px-6 font-semibold text-white">${escapeHtml(app.title)}</td> <td class="py-4 px-6 text-indigo-400 font-mono text-xs max-w-xs truncate"><a href="${escapeHtml(app.link)}" target="_blank" class="hover:underline">${escapeHtml(app.link)}</a></td> <td class="py-4 px-6 text-slate-400 text-xs max-w-sm truncate">${escapeHtml(app.description)}</td> <td class="py-4 px-6 text-right space-x-2 whitespace-nowrap"> <button onclick="openAppModal('${escapeHtml(app.id)}')" type="button" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs rounded-lg font-medium transition-colors cursor-pointer" title="Editar"> <i class="fa-solid fa-pen-to-square pointer-events-none"></i> </button> <button onclick="deleteApp('${escapeHtml(app.id)}')" type="button" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs rounded-lg font-medium transition-colors cursor-pointer" title="Excluir"> <i class="fa-solid fa-trash pointer-events-none"></i> </button> </td>;
-tbody.appendChild(tr);
-});
-}
-​// Modal Controls for Add/Edit
-function openAppModal(id = null) {
-const modal = document.getElementById('appModal');
-const modalTitle = document.getElementById('modalTitle');
-const appIdField = document.getElementById('appId');
-const titleInput = document.getElementById('appTitleInput');
-const linkInput = document.getElementById('appLinkInput');
-const descInput = document.getElementById('appDescInput');
-​modal.classList.remove('hidden');
-modal.classList.add('flex');
-​if (id) {
-const app = apps.find(a => a.id === id);
-if (app) {
-modalTitle.textContent = 'Editar Utilitário';
-appIdField.value = app.id;
-titleInput.value = app.title;
-linkInput.value = app.link;
-descInput.value = app.description;
-}
-} else {
-modalTitle.textContent = 'Adicionar Novo Utilitário';
-appIdField.value = '';
-titleInput.value = '';
-linkInput.value = '';
-descInput.value = '';
-}
-}
-​function closeAppModal() {
-const modal = document.getElementById('appModal');
-modal.classList.add('hidden');
-modal.classList.remove('flex');
-}
-​// Form Submit Handler (Cloud Firestore or Local Hybrid)
-async function handleFormSubmit(event) {
-event.preventDefault();
-​const id = document.getElementById('appId').value;
-const title = document.getElementById('appTitleInput').value.trim();
-const link = document.getElementById('appLinkInput').value.trim();
-const description = document.getElementById('appDescInput').value.trim();
-​if (!title || !link || !description) return;
-​try {
-if (isCloudMode && db && window.firebaseModules) {
-const { doc, addDoc, setDoc, collection } = window.firebaseModules;
-const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'apps');
-​if (id) {
-const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'apps', id);
-await setDoc(docRef, {
-title,
-link,
-description,
-updatedAt: Date.now()
-}, { merge: true });
-showToast('Utilitário atualizado no servidor com sucesso!', 'success');
-} else {
-await addDoc(colRef, {
-title,
-link,
-description,
-createdAt: Date.now()
-});
-showToast('Novo utilitário adicionado ao servidor com sucesso!', 'success');
-}
-} else {
-// Hybrid Local Storage mode fallback
-if (id) {
-const index = apps.findIndex(a => a.id === id);
-if (index !== -1) {
-apps[index] = { ...apps[index], title, link, description, updatedAt: Date.now() };
-}
-showToast('Utilitário atualizado com sucesso!', 'success');
-} else {
-const newApp = {
-id: 'local-' + Date.now(),
-title,
-link,
-description,
-createdAt: Date.now()
-};
-apps.push(newApp);
-showToast('Novo utilitário adicionado com sucesso!', 'success');
-}
-saveLocalApps();
-renderUserGrid();
-renderAdminTable();
-}
-​closeAppModal();
-} catch (e) {
-console.error("Error saving app:", e);
-showToast('Erro ao salvar utilitário. Verifique a conexão.', 'error');
-}
-}
-​// Delete App from Cloud or Local
-async function deleteApp(id) {
-try {
-if (isCloudMode && db && window.firebaseModules) {
-const { doc, deleteDoc } = window.firebaseModules;
-const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'apps', id);
-await deleteDoc(docRef);
-showToast('Utilitário excluído com sucesso.', 'success');
-} else {
-apps = apps.filter(a => a.id !== id);
-saveLocalApps();
-renderUserGrid();
-renderAdminTable();
-showToast('Utilitário excluído com sucesso.', 'success');
-}
-} catch (e) {
-console.error("Error deleting app:", e);
-showToast('Erro ao excluir utilitário.', 'error');
-}
-}
-​// Detail Modal Controls ("Saber Mais")
-function openDetailModal(id) {
-const app = apps.find(a => a.id === id);
-if (!app) return;
-​document.getElementById('detailModalTitle').textContent = app.title;
-document.getElementById('detailModalDesc').textContent = app.description;
-document.getElementById('detailModalBtn').href = app.link;
-​const modal = document.getElementById('detailModal');
-modal.classList.remove('hidden');
-modal.classList.add('flex');
-}
-​function closeDetailModal() {
-const modal = document.getElementById('detailModal');
-modal.classList.add('hidden');
-modal.classList.remove('flex');
-}
-​// Toast Notification System
-function showToast(message, type = 'success') {
-const toast = document.getElementById('toast');
-const toastMessage = document.getElementById('toastMessage');
-const toastIcon = document.getElementById('toastIcon');
-​if (!toast) return;
-​toastMessage.textContent = message;
-​if (type === 'success') {
-toastIcon.className = 'fa-solid fa-circle-check text-emerald-400';
-} else if (type === 'error') {
-toastIcon.className = 'fa-solid fa-circle-exclamation text-rose-400';
-} else {
-toastIcon.className = 'fa-solid fa-circle-info text-indigo-400';
-}
-​toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
-toast.classList.add('translate-y-0', 'opacity-100');
-​setTimeout(() => {
-toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
-toast.classList.remove('translate-y-0', 'opacity-100');
-}, 3500);
-}
-​// Helper to escape HTML to prevent XSS
-function escapeHtml(str) {
-if (!str) return '';
-return String(str)
-.replace(/&/g, "&")
-.replace(/</g, "<")
-.replace(/>/g, ">")
-.replace(/"/g, """)
-.replace(/'/g, "'");
-}
-</script>
+
+    <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold text-xl shadow-lg shadow-indigo-600/10">
+                    E
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                        Excellington
+                        <span id="syncBadge" onclick="showSyncDiagnostics()" class="text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium inline-flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity" title="Clique para verificar o status">
+                            <span id="syncDot" class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                            <span id="syncBadgeText">Modo Local</span>
+                        </span>
+                    </h1>
+                    <p class="text-xs text-slate-400">Vitrine oficial de aplicativos e ferramentas</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <!-- Secret Security Icon (5 clicks required to unlock admin) -->
+                <button id="securityIcon" type="button" class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-indigo-400 transition-all flex items-center justify-center cursor-pointer shadow-sm focus:outline-none">
+                    <i class="fa-solid fa-shield-halved text-sm pointer-events-none"></i>
+                </button>
+
+                <!-- Exit Browser Button -->
+                <button id="exitBtn" type="button" class="px-4 py-2.5 rounded-xl bg-rose-600/10 hover:bg-rose-600/20 text-rose-400 border border-rose-500/20 text-xs font-semibold transition-all flex items-center space-x-2 cursor-pointer shadow-sm focus:outline-none">
+                    <i class="fa-solid fa-power-off pointer-events-none"></i>
+                    <span class="hidden sm:inline">SAIR</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col">
+
+        <!-- USER VIEW: Public Showcase -->
+        <div id="userView" class="flex-1 flex flex-col space-y-8">
+            <!-- Hero Banner & Search -->
+            <div class="bg-gradient-to-br from-indigo-950/40 via-slate-900 to-slate-900 border border-slate-800/80 rounded-3xl p-8 sm:p-12 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="absolute -right-16 -top-16 w-64 h-64 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="space-y-3 max-w-2xl relative z-10 text-center md:text-left">
+                    <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-xs font-semibold border border-indigo-500/20">
+                        <i class="fa-solid fa-globe"></i>
+                        <span id="bannerSyncText">Vitrine de Utilitários Pronta</span>
+                    </div>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Explore Nossos Utilitários</h2>
+                    <p class="text-slate-400 text-sm sm:text-base leading-relaxed">
+                        Ferramentas e aplicativos selecionados e compartilhados para toda a comunidade.
+                    </p>
+                </div>
+                <div class="w-full md:w-80 relative z-10">
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm pointer-events-none"></i>
+                        <input type="text" id="searchInput" oninput="filterApps()" placeholder="Buscar aplicativo..." class="w-full pl-11 pr-4 py-3.5 bg-slate-950/80 border border-slate-700/80 rounded-2xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all shadow-inner">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Apps Grid -->
+            <div class="flex-1">
+                <div id="appsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Dynamic cards injected here -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyState" class="hidden flex flex-col items-center justify-center py-20 text-center space-y-4">
+                    <div class="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-600 text-2xl">
+                        <i class="fa-solid fa-folder-open"></i>
+                    </div>
+                    <div class="space-y-1">
+                        <h3 class="text-base font-semibold text-white">Nenhum utilitário encontrado</h3>
+                        <p class="text-xs text-slate-500 max-w-sm">Não há aplicativos cadastrados no momento ou correspondentes à sua busca.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ADMIN VIEW: Restricted Management Panel -->
+        <div id="adminView" class="hidden flex-1 flex flex-col space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/60 border border-slate-800 rounded-2xl p-6">
+                <div>
+                    <div class="flex items-center space-x-2 text-indigo-400 text-xs font-semibold mb-1">
+                        <i class="fa-solid fa-lock-open"></i>
+                        <span>Painel do Administrador</span>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white">Gerenciar Utilitários & Firebase</h2>
+                    <p class="text-slate-400 text-xs">Adicione, edite utilitários ou sincronize manualmente com sua base de dados no Firebase.</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button onclick="switchView('user')" type="button" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-all flex items-center space-x-2 cursor-pointer border border-slate-700">
+                        <i class="fa-solid fa-arrow-left pointer-events-none"></i>
+                        <span>Voltar para a Vitrine</span>
+                    </button>
+                    <button onclick="openAppModal()" type="button" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-all shadow-lg shadow-indigo-600/20 flex items-center space-x-2 cursor-pointer">
+                        <i class="fa-solid fa-plus pointer-events-none"></i>
+                        <span>Novo Utilitário</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Firebase Manual Sync Card -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center font-bold">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-white">Sincronização Manual com o Firebase</h3>
+                            <p class="text-xs text-slate-400">Envie todos os seus aplicativos salvos no navegador diretamente para sua base de dados na nuvem.</p>
+                        </div>
+                    </div>
+                    <button onclick="syncToFirebase()" type="button" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition-all shadow-lg shadow-emerald-600/20 flex items-center space-x-2 cursor-pointer">
+                        <i class="fa-solid fa-sync pointer-events-none"></i>
+                        <span>Enviar Dados para o Firebase</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Admin Table Container -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-800 bg-slate-950/60 text-slate-400 text-xs font-semibold uppercase tracking-wider">
+                                <th class="py-4 px-6">Título</th>
+                                <th class="py-4 px-6">Endereço (Link)</th>
+                                <th class="py-4 px-6">Descrição</th>
+                                <th class="py-4 px-6 text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminTableBody" class="divide-y divide-slate-800/80 text-sm">
+                            <!-- Dynamic rows injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- App Add/Edit Modal -->
+    <div id="appModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-6">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <h3 id="modalTitle" class="text-lg font-bold text-white">Adicionar Novo Utilitário</h3>
+                <button onclick="closeAppModal()" type="button" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 flex items-center justify-center transition-colors cursor-pointer">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <form id="appForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
+                <input type="hidden" id="appId">
+                <div class="space-y-1.5">
+                    <label class="text-xs font-semibold text-slate-300">Título do Aplicativo</label>
+                    <input type="text" id="appTitleInput" required placeholder="Ex: CalcPro Financeiro" class="w-full px-4 py-3 bg-slate-950 border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-all">
+                </div>
+                <div class="space-y-1.5">
+                    <label class="text-xs font-semibold text-slate-300">Endereço de Link</label>
+                    <input type="url" id="appLinkInput" required placeholder="https://github.com/usuario/repositorio" class="w-full px-4 py-3 bg-slate-950 border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-all font-mono text-xs">
+                </div>
+                <div class="space-y-1.5">
+                    <label class="text-xs font-semibold text-slate-300">Informações de Divulgação</label>
+                    <textarea id="appDescInput" required rows="4" placeholder="Descreva os recursos e utilidades do aplicativo..." class="w-full px-4 py-3 bg-slate-950 border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-all resize-none"></textarea>
+                </div>
+                <div class="pt-4 flex items-center justify-end space-x-3 border-t border-slate-800">
+                    <button type="button" onclick="closeAppModal()" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors cursor-pointer">Cancelar</button>
+                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-colors shadow-lg shadow-indigo-600/20 cursor-pointer">Salvar Utilitário</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Detail Modal ("Saber Mais") -->
+    <div id="detailModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-6">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-600/20 text-indigo-400 border border-indigo-500/20 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-circle-info"></i>
+                    </div>
+                    <h3 id="detailModalTitle" class="text-lg font-bold text-white">Detalhes do Utilitário</h3>
+                </div>
+                <button onclick="closeDetailModal()" type="button" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 flex items-center justify-center transition-colors cursor-pointer">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <p id="detailModalDesc" class="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap bg-slate-950/50 p-4 rounded-2xl border border-slate-800/80"></p>
+            </div>
+            <div class="pt-4 flex items-center justify-between space-x-3 border-t border-slate-800">
+                <button onclick="closeDetailModal()" type="button" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors cursor-pointer flex items-center space-x-2">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    <span>Retornar ao Painel</span>
+                </button>
+                <a id="detailModalBtn" href="#" target="_blank" rel="noopener noreferrer" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-all shadow-lg shadow-indigo-600/20 flex items-center space-x-2">
+                    <span>Acessar no GitHub</span>
+                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification System -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <div id="toastContent" class="bg-slate-900 border border-slate-700 text-slate-200 px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3 text-sm">
+            <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
+            <span id="toastMessage">Mensagem de alerta</span>
+        </div>
+    </div>
+
+    <script>
+        // Global state variables
+        let apps = [];
+        let isAdminUnlocked = false;
+        let securityClickCount = 0;
+        let securityTimer = null;
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'excellington-public-apps';
+        
+        // =========================================================================
+        // SUA CONFIGURAÇÃO DO FIREBASE (Cole aqui se desejar usar a sincronização manual)
+        // =========================================================================
+        const manualFirebaseConfig = {
+          apiKey: "AIzaSyD1UFBz1bNb595YmpDximHiQDCIvogJSS4",
+          authDomain: "excellingtonapps.firebaseapp.com",
+          projectId: "excellingtonapps",
+          storageBucket: "excellingtonapps.firebasestorage.app",
+          messagingSenderId: "1054816494537",
+          appId: "1:1054816494537:web:327c45879b7e20b173fe18",
+          measurementId: "G-LTXSW29WDK"
+        }; 
+
+        // Initialize app immediately on script load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
+        }
+
+        function initApp() {
+            setupHeaderButtons();
+            loadLocalApps();
+        }
+
+        function setupHeaderButtons() {
+            // Security icon (5 clicks for admin) - completely silent unlock
+            const secIcon = document.getElementById('securityIcon');
+            if (secIcon) {
+                secIcon.onclick = null;
+                secIcon.addEventListener('click', () => {
+                    securityClickCount++;
+                    clearTimeout(securityTimer);
+                    if (securityClickCount >= 5) {
+                        securityClickCount = 0;
+                        unlockAdmin();
+                    } else {
+                        securityTimer = setTimeout(() => {
+                            securityClickCount = 0;
+                        }, 2500);
+                    }
+                });
+            }
+
+            // Exit button - safe exit / reload fallback
+            const exitBtn = document.getElementById('exitBtn');
+            if (exitBtn) {
+                exitBtn.onclick = null;
+                exitBtn.addEventListener('click', () => {
+                    showToast('Encerrando sessão...', 'info');
+                    setTimeout(() => {
+                        try {
+                            window.close();
+                        } catch (e) {}
+                        window.location.href = 'about:blank';
+                    }, 400);
+                });
+            }
+        }
+
+        function loadLocalApps() {
+            const saved = localStorage.getItem('excellington_apps');
+            if (saved) {
+                try {
+                    apps = JSON.parse(saved);
+                } catch (err) {
+                    apps = getDefaultAppsList();
+                }
+            } else {
+                apps = getDefaultAppsList();
+                saveLocalApps();
+            }
+            renderUserGrid();
+        }
+
+        function getDefaultAppsList() {
+            return [
+                {
+                    id: 'default-1',
+                    title: 'Excellington Dashboard',
+                    link: 'https://github.com/excellington',
+                    description: 'Painel analítico completo para monitoramento de dados em tempo real com exportação em múltiplos formatos e gráficos dinâmicos.',
+                    createdAt: Date.now()
+                },
+                {
+                    id: 'default-2',
+                    title: 'CalcPro Financeiro',
+                    link: 'https://github.com/excellington',
+                    description: 'Calculadora de juros compostos, fluxo de caixa e projeções financeiras avançadas desenvolvida sob medida para gestores.',
+                    createdAt: Date.now()
+                }
+            ];
+        }
+
+        function saveLocalApps() {
+            try {
+                localStorage.setItem('excellington_apps', JSON.stringify(apps));
+            } catch (e) {
+                console.error("Error saving to localStorage:", e);
+            }
+        }
+
+        function unlockAdmin() {
+            isAdminUnlocked = true;
+            showToast('Painel do administrador liberado!', 'success');
+            switchView('admin');
+        }
+
+        function switchView(viewName) {
+            const userView = document.getElementById('userView');
+            const adminView = document.getElementById('adminView');
+
+            if (viewName === 'admin') {
+                if (!isAdminUnlocked) {
+                    showToast('Acesso restrito. Toque no ícone de segurança 5 vezes.', 'error');
+                    return;
+                }
+                userView.classList.add('hidden');
+                adminView.classList.remove('hidden');
+                renderAdminTable();
+            } else {
+                isAdminUnlocked = false;
+                adminView.classList.add('hidden');
+                userView.classList.remove('hidden');
+                renderUserGrid();
+            }
+        }
+
+        // Render User Grid
+        function renderUserGrid(filteredList = null) {
+            const grid = document.getElementById('appsGrid');
+            const emptyState = document.getElementById('emptyState');
+            const dataToRender = filteredList !== null ? filteredList : apps;
+
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            if (dataToRender.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            dataToRender.forEach(app => {
+                const card = document.createElement('div');
+                card.className = 'bg-slate-900 border border-slate-800/80 rounded-2xl p-6 hover:border-indigo-500/50 transition-all duration-300 flex flex-col justify-between group shadow-lg';
+                card.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="flex items-start justify-between">
+                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-600/20 to-violet-600/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center font-bold text-lg group-hover:scale-105 transition-transform">
+                                ${escapeHtml(app.title.charAt(0).toUpperCase())}
+                            </div>
+                            <span class="px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 text-[10px] font-medium border border-slate-700">GitHub</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-white group-hover:text-indigo-300 transition-colors">${escapeHtml(app.title)}</h3>
+                        <p class="text-slate-400 text-sm line-clamp-3 leading-relaxed">${escapeHtml(app.description)}</p>
+                    </div>
+                    <div class="pt-6 mt-6 border-t border-slate-800/80 flex items-center justify-between gap-3">
+                        <button onclick="openDetailModal('${escapeHtml(app.id)}')" type="button" class="text-xs font-semibold text-indigo-400 hover:text-indigo-300 flex items-center space-x-1.5 transition-colors cursor-pointer">
+                            <span>Saber Mais</span>
+                            <i class="fa-solid fa-chevron-right text-[10px] pointer-events-none"></i>
+                        </button>
+                        <a href="${escapeHtml(app.link)}" target="_blank" rel="noopener noreferrer" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition-all shadow-md shadow-indigo-600/20 flex items-center space-x-1.5">
+                            <span>Abrir</span>
+                            <i class="fa-solid fa-arrow-up-right-from-square text-[10px] pointer-events-none"></i>
+                        </a>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Filter apps based on search input
+        function filterApps() {
+            const searchInput = document.getElementById('searchInput');
+            if (!searchInput) return;
+            const query = searchInput.value.toLowerCase();
+            const filtered = apps.filter(app => 
+                app.title.toLowerCase().includes(query) || 
+                app.description.toLowerCase().includes(query)
+            );
+            renderUserGrid(filtered);
+        }
+
+        // Render Admin Table
+        function renderAdminTable() {
+            const tbody = document.getElementById('adminTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if (apps.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="py-8 text-center text-slate-500 text-sm">Nenhum aplicativo cadastrado no momento.</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            apps.forEach(app => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-800/50 transition-colors';
+                tr.innerHTML = `
+                    <td class="py-4 px-6 font-semibold text-white">${escapeHtml(app.title)}</td>
+                    <td class="py-4 px-6 text-indigo-400 font-mono text-xs max-w-xs truncate"><a href="${escapeHtml(app.link)}" target="_blank" class="hover:underline">${escapeHtml(app.link)}</a></td>
+                    <td class="py-4 px-6 text-slate-400 text-xs max-w-sm truncate">${escapeHtml(app.description)}</td>
+                    <td class="py-4 px-6 text-right space-x-2 whitespace-nowrap">
+                        <button onclick="openAppModal('${escapeHtml(app.id)}')" type="button" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs rounded-lg font-medium transition-colors cursor-pointer" title="Editar">
+                            <i class="fa-solid fa-pen-to-square pointer-events-none"></i>
+                        </button>
+                        <button onclick="deleteApp('${escapeHtml(app.id)}')" type="button" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs rounded-lg font-medium transition-colors cursor-pointer" title="Excluir">
+                            <i class="fa-solid fa-trash pointer-events-none"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Modal Controls for Add/Edit
+        function openAppModal(id = null) {
+            const modal = document.getElementById('appModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const appIdField = document.getElementById('appId');
+            const titleInput = document.getElementById('appTitleInput');
+            const linkInput = document.getElementById('appLinkInput');
+            const descInput = document.getElementById('appDescInput');
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            if (id) {
+                const app = apps.find(a => a.id === id);
+                if (app) {
+                    modalTitle.textContent = 'Editar Utilitário';
+                    appIdField.value = app.id;
+                    titleInput.value = app.title;
+                    linkInput.value = app.link;
+                    descInput.value = app.description;
+                }
+            } else {
+                modalTitle.textContent = 'Adicionar Novo Utilitário';
+                appIdField.value = '';
+                titleInput.value = '';
+                linkInput.value = '';
+                descInput.value = '';
+            }
+        }
+
+        function closeAppModal() {
+            const modal = document.getElementById('appModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // Form Submit Handler
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            
+            const id = document.getElementById('appId').value;
+            const title = document.getElementById('appTitleInput').value.trim();
+            const link = document.getElementById('appLinkInput').value.trim();
+            const description = document.getElementById('appDescInput').value.trim();
+
+            if (!title || !link || !description) return;
+
+            if (id) {
+                const index = apps.findIndex(a => a.id === id);
+                if (index !== -1) {
+                    apps[index] = { ...apps[index], title, link, description, updatedAt: Date.now() };
+                }
+                showToast('Utilitário atualizado com sucesso!', 'success');
+            } else {
+                const newApp = {
+                    id: 'app-' + Date.now(),
+                    title,
+                    link,
+                    description,
+                    createdAt: Date.now()
+                };
+                apps.push(newApp);
+                showToast('Novo utilitário adicionado com sucesso!', 'success');
+            }
+
+            saveLocalApps();
+            renderUserGrid();
+            renderAdminTable();
+            closeAppModal();
+        }
+
+        // Delete App
+        function deleteApp(id) {
+            apps = apps.filter(a => a.id !== id);
+            saveLocalApps();
+            renderUserGrid();
+            renderAdminTable();
+            showToast('Utilitário excluído com sucesso.', 'success');
+        }
+
+        // Manual Sync to Firebase
+        async function syncToFirebase() {
+            if (!manualFirebaseConfig || !manualFirebaseConfig.apiKey) {
+                showToast('Configure a chave do Firebase no código antes de sincronizar.', 'error');
+                return;
+            }
+            if (!window.firebaseModules) {
+                showToast('Módulos do Firebase não carregados.', 'error');
+                return;
+            }
+
+            try {
+                showToast('Enviando dados para o Firebase...', 'info');
+                const { initializeApp, getFirestore, collection, addDoc } = window.firebaseModules;
+                
+                const appInstance = initializeApp(manualFirebaseConfig);
+                const dbInstance = getFirestore(appInstance);
+                const colRef = collection(dbInstance, 'artifacts', appId, 'public', 'data', 'apps');
+
+                for (const item of apps) {
+                    await addDoc(colRef, {
+                        title: item.title,
+                        link: item.link,
+                        description: item.description,
+                        createdAt: item.createdAt || Date.now()
+                    });
+                }
+
+                document.getElementById('syncBadgeText').textContent = "Nuvem Sincronizada";
+                document.getElementById('syncDot').className = "w-1.5 h-1.5 rounded-full bg-emerald-400";
+                document.getElementById('syncBadge').className = "text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium inline-flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity";
+                
+                showToast('Todos os dados foram enviados para o Firebase com sucesso!', 'success');
+            } catch (err) {
+                console.error("Sync error:", err);
+                showToast('Erro ao enviar para o Firebase. Verifique as regras do Firestore.', 'error');
+            }
+        }
+
+        function showSyncDiagnostics() {
+            showToast('Modo local ativo. Clique em Gerenciar (Escudo) para enviar dados ao Firebase.', 'info');
+        }
+
+        // Detail Modal Controls ("Saber Mais")
+        function openDetailModal(id) {
+            const app = apps.find(a => a.id === id);
+            if (!app) return;
+
+            document.getElementById('detailModalTitle').textContent = app.title;
+            document.getElementById('detailModalDesc').textContent = app.description;
+            document.getElementById('detailModalBtn').href = app.link;
+
+            const modal = document.getElementById('detailModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeDetailModal() {
+            const modal = document.getElementById('detailModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // Toast Notification System
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+
+            if (!toast) return;
+
+            toastMessage.textContent = message;
+            
+            if (type === 'success') {
+                toastIcon.className = 'fa-solid fa-circle-check text-emerald-400';
+            } else if (type === 'error') {
+                toastIcon.className = 'fa-solid fa-circle-exclamation text-rose-400';
+            } else {
+                toastIcon.className = 'fa-solid fa-circle-info text-indigo-400';
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+                toast.classList.remove('translate-y-0', 'opacity-100');
+            }, 3500);
+        }
+
+        // Helper to escape HTML to prevent XSS
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
 </body>
 </html>
+```
