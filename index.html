@@ -249,8 +249,8 @@
             try {
                 if (typeof firebase !== 'undefined') {
                     if (!firebase.apps.length) {
-                       // firebase.initializeApp(defaultFirebaseConfig);
-                        firebase.initializeApp();
+                        firebase.initializeApp(defaultFirebaseConfig);
+                       // firebase.initializeApp();
                     }
                     db = firebase.firestore();
                     await fetchAppsFromFirebase();
@@ -291,8 +291,8 @@
             renderUserGrid();
         }
 
-        //function getDefaultAppsList() {
-         //   return [
+        function getDefaultAppsList() {
+            return [
                // {
                 //    id: 'default-1',
             //        title: 'Excellington Dashboard',
@@ -307,8 +307,8 @@
            //         description: 'Calculadora de juros compostos, fluxo de caixa e projeções financeiras avançadas desenvolvida sob medida para gestores.',
            //         createdAt: Date.now()
         //        }
-        //    ];
-     //   }
+            ];
+       }
 
         // Bulletproof direct handlers for header buttons
         function handleSecurityClick() {
