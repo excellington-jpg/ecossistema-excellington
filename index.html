@@ -12,11 +12,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { getFirestore, doc, addDoc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 ​window.firebaseModules = {
-initializeApp, getAuth, signInAnonymously, signInWithCustomToken,
-getFirestore, doc, addDoc, setDoc, deleteDoc, onSnapshot, collection
+initializeApp, getFirestore, doc, addDoc, setDoc, deleteDoc, onSnapshot, collection
 };
 ​window.dispatchEvent(new Event('firebase-modules-ready'));
 </script>
@@ -214,8 +212,6 @@ Ferramentas e aplicativos selecionados e compartilhados para toda a comunidade.
 ​<script>
 // Global state variables
 let db = null;
-let auth = null;
-let user = null;
 let apps = [];
 let isAdminUnlocked = false;
 let isCloudMode = false;
@@ -223,17 +219,16 @@ let securityClickCount = 0;
 let securityTimer = null;
 ​const appId = typeof __app_id !== 'undefined' ? __app_id : 'excellington-public-apps';
 ​// =========================================================================
-// COLE SUA CONFIGURAÇÃO DO FIREBASE ABAIXO (Caso use GitHub Pages próprio):
+// SUA CONFIGURAÇÃO DO FIREBASE (Inserida com sucesso):
 // =========================================================================
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyD1UFBz1bNb595YmpDximHiQDCIvogJSS4",
-  authDomain: "excellingtonapps.firebaseapp.com",
-  projectId: "excellingtonapps",
-  storageBucket: "excellingtonapps.firebasestorage.app",
-  messagingSenderId: "1054816494537",
-  appId: "1:1054816494537:web:327c45879b7e20b173fe18",
-  measurementId: "G-LTXSW29WDK"
+const manualFirebaseConfig = {
+apiKey: "AIzaSyD1UFBz1bNb595YmpDximHiQDCIvogJSS4",
+authDomain: "excellingtonapps.firebaseapp.com",
+projectId: "excellingtonapps",
+storageBucket: "excellingtonapps.firebasestorage.app",
+messagingSenderId: "1054816494537",
+appId: "1:1054816494537:web:327c45879b7e20b173fe18",
+measurementId: "G-LTXSW29WDK"
 };
 ​let firebaseConfig = null;
 try {
@@ -241,15 +236,21 @@ firebaseConfig = (typeof __firebase_config !== 'undefined' && __firebase_config)
 } catch (e) {
 firebaseConfig = manualFirebaseConfig.apiKey ? manualFirebaseConfig : null;
 }
-​// Initialize UI event listeners immediately so buttons never break under any circumstance
-document.addEventListener('DOMContentLoaded', () => {
+​// Initialize UI event listeners immediately on script load so buttons never fail
+if (document.readyState === 'loading') {
+document.addEventListener('DOMContentLoaded', initApp);
+} else {
+initApp();
+}
+​function initApp() {
 setupHeaderButtons();
-initHybridLocalMode(); // Render immediately with local data so screen is instantly ready
-});
+initHybridLocalMode();
+}
 ​function setupHeaderButtons() {
 // Security icon (5 clicks for admin) - completely silent unlock
 const secIcon = document.getElementById('securityIcon');
 if (secIcon) {
+secIcon.onclick = null; // Clear old handlers
 secIcon.addEventListener('click', () => {
 securityClickCount++;
 clearTimeout(securityTimer);
@@ -266,6 +267,7 @@ securityClickCount = 0;
 ​// Exit button - safe exit / reload fallback
 const exitBtn = document.getElementById('exitBtn');
 if (exitBtn) {
+exitBtn.onclick = null;
 exitBtn.addEventListener('click', () => {
 showToast('Encerrando sessão...', 'info');
 setTimeout(() => {
@@ -299,29 +301,18 @@ renderAdminTable();
 ​// Attempt Firebase initialization in background without blocking UI
 setTimeout(() => {
 initFirebase();
-}, 300);
+}, 250);
 }
-​// Initialize Firebase Firestore with automatic hybrid fallback & local migration
+​// Initialize Firebase Firestore directly (bypassing auth restrictions)
 async function initFirebase() {
 if (!firebaseConfig || !firebaseConfig.apiKey || !window.firebaseModules) {
-console.log("Running in hybrid local mode (no Firebase config provided).");
+console.log("Running in hybrid local mode.");
 return;
 }
 ​try {
-const { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, getFirestore, onSnapshot, collection, addDoc } = window.firebaseModules;
+const { initializeApp, getFirestore, onSnapshot, collection, addDoc } = window.firebaseModules;
 ​const app = initializeApp(firebaseConfig);
 db = getFirestore(app);
-auth = getAuth(app);
-​let cred;
-if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-cred = await signInWithCustomToken(auth, __initial_auth_token);
-} else {
-cred = await signInAnonymously(auth);
-}
-​user = cred && cred.user ? cred.user : auth.currentUser;
-if (!user && auth) {
-user = auth.currentUser;
-}
 ​if (!db) {
 throw new Error("Firestore instance could not be created.");
 }
@@ -349,7 +340,7 @@ createdAt: localApp.createdAt || Date.now()
 }
 localStorage.removeItem('excellington_apps');
 showToast('Seus dados salvos localmente foram migrados para a nuvem com sucesso!', 'success');
-return; // snapshot will re-trigger with newly migrated apps
+return;
 } catch (migrationErr) {
 console.error("Migration error:", migrationErr);
 }
@@ -368,6 +359,8 @@ console.warn("Firestore snapshot warning (keeping local fallback):", error);
 });
 ​} catch (e) {
 console.warn("Firebase cloud connection warning, keeping local fallback active:", e);
+isCloudMode = false;
+updateSyncBadge(false);
 }
 }
 ​function updateSyncBadge(cloudActive) {
@@ -393,7 +386,7 @@ badge.className = "text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-4
 if (isCloudMode) {
 showToast('Status: Conectado ao Banco de Dados na Nuvem (Firebase). Sincronização ativa!', 'success');
 } else {
-showToast('Status: Modo local ativo. (Para nuvem, configure o manualFirebaseConfig).', 'info');
+showToast('Status: Modo local ativo. (Dados salvos no seu navegador).', 'info');
 }
 }
 ​window.addEventListener('firebase-modules-ready', () => {});
@@ -417,9 +410,6 @@ createdAt: Date.now()
 }
 ​async function seedDefaultApps() {
 if (!isCloudMode || !db) return;
-if (!user && auth && auth.currentUser) {
-user = auth.currentUser;
-}
 ​const { addDoc, collection } = window.firebaseModules;
 const defaultAppsList = getDefaultAppsList().map(item => ({
 title: item.title,
