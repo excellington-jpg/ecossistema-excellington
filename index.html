@@ -1,4 +1,4 @@
-
+``
 <!DOCTYPE html>
 <html lang="pt-BR" class="h-full">
 <head>
@@ -57,12 +57,12 @@
 
             <div class="flex items-center space-x-3">
                 <!-- Secret Security Icon (5 clicks required to unlock admin) -->
-                <button id="securityIcon" class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-indigo-400 transition-all flex items-center justify-center cursor-pointer shadow-sm">
+                <button id="securityIcon" type="button" class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-indigo-400 transition-all flex items-center justify-center cursor-pointer shadow-sm focus:outline-none">
                     <i class="fa-solid fa-shield-halved text-sm pointer-events-none"></i>
                 </button>
 
                 <!-- Exit Browser Button -->
-                <button onclick="exitApplication()" class="px-4 py-2.5 rounded-xl bg-rose-600/10 hover:bg-rose-600/20 text-rose-400 border border-rose-500/20 text-xs font-semibold transition-all flex items-center space-x-2 cursor-pointer shadow-sm">
+                <button id="exitBtn" type="button" class="px-4 py-2.5 rounded-xl bg-rose-600/10 hover:bg-rose-600/20 text-rose-400 border border-rose-500/20 text-xs font-semibold transition-all flex items-center space-x-2 cursor-pointer shadow-sm focus:outline-none">
                     <i class="fa-solid fa-power-off pointer-events-none"></i>
                     <span class="hidden sm:inline">SAIR</span>
                 </button>
@@ -84,7 +84,7 @@
                     </div>
                     <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Explore Nossos Utilitários</h2>
                     <p class="text-slate-400 text-sm sm:text-base leading-relaxed">
-                        Ferramentas e aplicativos do GitHub selecionados e compartilhados para toda a comunidade.
+                        Ferramentas e aplicativos selecionados e compartilhados para toda a comunidade.
                     </p>
                 </div>
                 <div class="w-full md:w-80 relative z-10">
@@ -123,14 +123,14 @@
                         <span>Painel do Administrador</span>
                     </div>
                     <h2 class="text-2xl font-bold text-white">Gerenciar Utilitários</h2>
-                    <p class="text-slate-400 text-xs">Adicione, edite ou remova links do GitHub compartilhados com todos os usuários instantaneamente.</p>
+                    <p class="text-slate-400 text-xs">Adicione, edite ou remova links compartilhados com todos os usuários instantaneamente.</p>
                 </div>
                 <div class="flex items-center space-x-3">
-                    <button onclick="switchView('user')" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-all flex items-center space-x-2 cursor-pointer border border-slate-700">
+                    <button onclick="switchView('user')" type="button" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-all flex items-center space-x-2 cursor-pointer border border-slate-700">
                         <i class="fa-solid fa-arrow-left pointer-events-none"></i>
                         <span>Voltar para a Vitrine</span>
                     </button>
-                    <button onclick="openAppModal()" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-all shadow-lg shadow-indigo-600/20 flex items-center space-x-2 cursor-pointer">
+                    <button onclick="openAppModal()" type="button" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-all shadow-lg shadow-indigo-600/20 flex items-center space-x-2 cursor-pointer">
                         <i class="fa-solid fa-plus pointer-events-none"></i>
                         <span>Novo Utilitário</span>
                     </button>
@@ -144,7 +144,7 @@
                         <thead>
                             <tr class="border-b border-slate-800 bg-slate-950/60 text-slate-400 text-xs font-semibold uppercase tracking-wider">
                                 <th class="py-4 px-6">Título</th>
-                                <th class="py-4 px-6">Endereço (Link GitHub)</th>
+                                <th class="py-4 px-6">Endereço (Link)</th>
                                 <th class="py-4 px-6">Descrição</th>
                                 <th class="py-4 px-6 text-right">Ações</th>
                             </tr>
@@ -164,7 +164,7 @@
         <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-6">
             <div class="flex items-center justify-between border-b border-slate-800 pb-4">
                 <h3 id="modalTitle" class="text-lg font-bold text-white">Adicionar Novo Utilitário</h3>
-                <button onclick="closeAppModal()" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 flex items-center justify-center transition-colors cursor-pointer">
+                <button onclick="closeAppModal()" type="button" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 flex items-center justify-center transition-colors cursor-pointer">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
@@ -175,7 +175,7 @@
                     <input type="text" id="appTitleInput" required placeholder="Ex: CalcPro Financeiro" class="w-full px-4 py-3 bg-slate-950 border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-all">
                 </div>
                 <div class="space-y-1.5">
-                    <label class="text-xs font-semibold text-slate-300">Endereço de Link (GitHub)</label>
+                    <label class="text-xs font-semibold text-slate-300">Endereço de Link</label>
                     <input type="url" id="appLinkInput" required placeholder="https://github.com/usuario/repositorio" class="w-full px-4 py-3 bg-slate-950 border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-all font-mono text-xs">
                 </div>
                 <div class="space-y-1.5">
@@ -200,7 +200,7 @@
                     </div>
                     <h3 id="detailModalTitle" class="text-lg font-bold text-white">Detalhes do Utilitário</h3>
                 </div>
-                <button onclick="closeDetailModal()" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 flex items-center justify-center transition-colors cursor-pointer">
+                <button onclick="closeDetailModal()" type="button" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 flex items-center justify-center transition-colors cursor-pointer">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
@@ -208,7 +208,7 @@
                 <p id="detailModalDesc" class="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap bg-slate-950/50 p-4 rounded-2xl border border-slate-800/80"></p>
             </div>
             <div class="pt-4 flex items-center justify-between space-x-3 border-t border-slate-800">
-                <button onclick="closeDetailModal()" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors cursor-pointer flex items-center space-x-2">
+                <button onclick="closeDetailModal()" type="button" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors cursor-pointer flex items-center space-x-2">
                     <i class="fa-solid fa-arrow-left"></i>
                     <span>Retornar ao Painel</span>
                 </button>
@@ -239,19 +239,6 @@
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'excellington-public-apps';
         
-        // MANUALLY CONFIGURABLE FIREBASE CONFIG (For GitHub Pages / Static Hosting)
-        // If you host this on GitHub Pages, you can paste your Firebase project config here:
-        //const manualFirebaseConfig = null; 
-        /* Example:
-        const manualFirebaseConfig = {
-            apiKey: "AIzaSy...",
-            authDomain: "seu-projeto.firebaseapp.com",
-            projectId: "seu-projeto",
-            storageBucket: "seu-projeto.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "1:123:web:abc"
-        };
-        */
 
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -271,21 +258,21 @@ const firebaseConfig = {
 
         let firebaseConfig = null;
         try {
-            firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : manualFirebaseConfig;
+            firebaseConfig = (typeof __firebase_config !== 'undefined' && __firebase_config) ? JSON.parse(__firebase_config) : (manualFirebaseConfig.apiKey ? manualFirebaseConfig : null);
         } catch (e) {
-            firebaseConfig = manualFirebaseConfig;
+            firebaseConfig = manualFirebaseConfig.apiKey ? manualFirebaseConfig : null;
         }
 
-        // Initialize Firebase Firestore with automatic hybrid fallback
+        // Initialize Firebase Firestore with automatic hybrid fallback & local migration
         async function initFirebase() {
-            if (!firebaseConfig || !window.firebaseModules) {
-                console.warn("Firebase config not found. Running in hybrid local mode.");
+            if (!firebaseConfig || !firebaseConfig.apiKey || !window.firebaseModules) {
+                console.warn("Firebase config not found or incomplete. Running in hybrid local mode.");
                 initHybridLocalMode();
                 return;
             }
 
             try {
-                const { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, getFirestore, onSnapshot, collection } = window.firebaseModules;
+                const { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, getFirestore, onSnapshot, collection, addDoc } = window.firebaseModules;
                 
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
@@ -312,17 +299,39 @@ const firebaseConfig = {
 
                 const appsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'apps');
 
-                onSnapshot(appsCollectionRef, (snapshot) => {
+                onSnapshot(appsCollectionRef, async (snapshot) => {
                     const loadedApps = [];
                     snapshot.forEach((docSnap) => {
                         loadedApps.push({ id: docSnap.id, ...docSnap.data() });
                     });
 
-                    apps = loadedApps;
+                    if (loadedApps.length === 0) {
+                        const localSaved = localStorage.getItem('excellington_apps');
+                        let localApps = [];
+                        try { localApps = localSaved ? JSON.parse(localSaved) : []; } catch (err) { localApps = []; }
 
-                    if (apps.length === 0) {
+                        if (localApps.length > 0) {
+                            try {
+                                for (const localApp of localApps) {
+                                    await addDoc(appsCollectionRef, {
+                                        title: localApp.title,
+                                        link: localApp.link,
+                                        description: localApp.description,
+                                        createdAt: localApp.createdAt || Date.now()
+                                    });
+                                }
+                                localStorage.removeItem('excellington_apps');
+                                showToast('Seus dados salvos localmente foram migrados para a nuvem com sucesso!', 'success');
+                                return; // snapshot will trigger again with migrated apps
+                            } catch (migrationErr) {
+                                console.error("Migration error:", migrationErr);
+                            }
+                        }
+
+                        // If no local apps either, seed default apps
                         seedDefaultApps();
                     } else {
+                        apps = loadedApps;
                         renderUserGrid();
                         if (!document.getElementById('adminView').classList.contains('hidden')) {
                             renderAdminTable();
@@ -378,9 +387,9 @@ const firebaseConfig = {
 
         function showSyncDiagnostics() {
             if (isCloudMode) {
-                showToast('Status: Conectado ao Banco de Dados na Nuvem (Firebase). Sincronização em tempo real ativa para todos os usuários!', 'success');
+                showToast('Status: Conectado ao Banco de Dados na Nuvem (Firebase). Sincronização em tempo real ativa!', 'success');
             } else {
-                showToast('Status: Rodando em modo local. Para ativar nuvem real, configure o Firebase no código.', 'info');
+                showToast('Status: Rodando em modo local. Para nuvem real, configure o Firebase no código.', 'info');
             }
         }
 
@@ -446,34 +455,46 @@ const firebaseConfig = {
             }
         }
 
-        // Security Icon 5-click easter egg counter
-        let securityClickCount = 0;
-        let securityTimer = null;
+        // Initialize header button listeners safely on DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', () => {
+            // Security Icon 5-click easter egg counter
+            let securityClickCount = 0;
+            let securityTimer = null;
 
-        const securityBtn = document.getElementById('securityIcon');
-        if (securityBtn) {
-            securityBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                securityClickCount++;
-                
-                const icon = securityBtn.querySelector('i');
-                if (icon) {
-                    icon.classList.add('text-indigo-400', 'scale-125');
-                    setTimeout(() => icon.classList.remove('text-indigo-400', 'scale-125'), 250);
-                }
+            const securityBtn = document.getElementById('securityIcon');
+            if (securityBtn) {
+                securityBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    securityClickCount++;
+                    
+                    const icon = securityBtn.querySelector('i');
+                    if (icon) {
+                        icon.classList.add('text-indigo-400', 'scale-125');
+                        setTimeout(() => icon.classList.remove('text-indigo-400', 'scale-125'), 250);
+                    }
 
-                clearTimeout(securityTimer);
-                
-                if (securityClickCount >= 5) {
-                    unlockAdmin();
-                    securityClickCount = 0;
-                } else {
-                    securityTimer = setTimeout(() => {
+                    clearTimeout(securityTimer);
+                    
+                    if (securityClickCount >= 5) {
+                        unlockAdmin();
                         securityClickCount = 0;
-                    }, 1500);
-                }
-            });
-        }
+                    } else {
+                        securityTimer = setTimeout(() => {
+                            securityClickCount = 0;
+                        }, 1500);
+                    }
+                });
+            }
+
+            // Exit Button listener
+            const exitBtn = document.getElementById('exitBtn');
+            if (exitBtn) {
+                exitBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    exitApplication();
+                });
+            }
+        });
 
         function unlockAdmin() {
             isAdminUnlocked = true;
@@ -532,7 +553,7 @@ const firebaseConfig = {
                         <p class="text-slate-400 text-sm line-clamp-3 leading-relaxed">${escapeHtml(app.description)}</p>
                     </div>
                     <div class="pt-6 mt-6 border-t border-slate-800/80 flex items-center justify-between gap-3">
-                        <button onclick="openDetailModal('${escapeHtml(app.id)}')" class="text-xs font-semibold text-indigo-400 hover:text-indigo-300 flex items-center space-x-1.5 transition-colors cursor-pointer">
+                        <button onclick="openDetailModal('${escapeHtml(app.id)}')" type="button" class="text-xs font-semibold text-indigo-400 hover:text-indigo-300 flex items-center space-x-1.5 transition-colors cursor-pointer">
                             <span>Saber Mais</span>
                             <i class="fa-solid fa-chevron-right text-[10px] pointer-events-none"></i>
                         </button>
@@ -581,10 +602,10 @@ const firebaseConfig = {
                     <td class="py-4 px-6 text-indigo-400 font-mono text-xs max-w-xs truncate"><a href="${escapeHtml(app.link)}" target="_blank" class="hover:underline">${escapeHtml(app.link)}</a></td>
                     <td class="py-4 px-6 text-slate-400 text-xs max-w-sm truncate">${escapeHtml(app.description)}</td>
                     <td class="py-4 px-6 text-right space-x-2 whitespace-nowrap">
-                        <button onclick="openAppModal('${escapeHtml(app.id)}')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs rounded-lg font-medium transition-colors cursor-pointer" title="Editar">
+                        <button onclick="openAppModal('${escapeHtml(app.id)}')" type="button" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs rounded-lg font-medium transition-colors cursor-pointer" title="Editar">
                             <i class="fa-solid fa-pen-to-square pointer-events-none"></i>
                         </button>
-                        <button onclick="deleteApp('${escapeHtml(app.id)}')" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs rounded-lg font-medium transition-colors cursor-pointer" title="Excluir">
+                        <button onclick="deleteApp('${escapeHtml(app.id)}')" type="button" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs rounded-lg font-medium transition-colors cursor-pointer" title="Excluir">
                             <i class="fa-solid fa-trash pointer-events-none"></i>
                         </button>
                     </td>
