@@ -22,9 +22,7 @@
             getFirestore, doc, addDoc, setDoc, deleteDoc, onSnapshot, collection
         };
         
-        if (typeof window.initFirebase === 'function') {
-            window.initFirebase();
-        }
+        window.dispatchEvent(new Event('firebase-modules-ready'));
     </script>
     <script>
         tailwind.config = {
@@ -49,7 +47,10 @@
                 <div>
                     <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
                         Excellington
-                        <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-medium hidden sm:inline-block">Utilitários Excelentes</span>
+                        <span id="syncBadge" class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium hidden sm:inline-flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                            Nuvem Conectada
+                        </span>
                     </h1>
                     <p class="text-xs text-slate-400">Vitrine oficial de aplicativos e ferramentas</p>
                 </div>
@@ -57,7 +58,7 @@
 
             <div class="flex items-center space-x-3">
                 <!-- Secret Security Icon (5 clicks required to unlock admin) -->
-                <button id="securityIcon" class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-indigo-400 transition-all flex items-center justify-center cursor-pointer shadow-sm" title="Área restrita">
+                <button id="securityIcon" class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-indigo-400 transition-all flex items-center justify-center cursor-pointer shadow-sm" title="Painel restrito">
                     <i class="fa-solid fa-shield-halved text-sm pointer-events-none"></i>
                 </button>
 
@@ -114,6 +115,7 @@
             </div>
         </div>
 
+        <!-- ADMIN VIEW: Restricted Management Panel -->
         <div id="adminView" class="hidden flex-1 flex flex-col space-y-6">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/60 border border-slate-800 rounded-2xl p-6">
                 <div>
@@ -241,7 +243,7 @@
         // Initialize Firebase Firestore with strict compliance to security rules
         async function initFirebase() {
             if (!firebaseConfig || !window.firebaseModules) {
-                console.warn("Firebase config not found. Running in offline mock mode.");
+                console.warn("Firebase config not found. Running in offline fallback mode.");
                 loadOfflineDefaultApps();
                 return;
             }
@@ -263,7 +265,12 @@
 
                 user = cred && cred.user ? cred.user : auth.currentUser;
                 if (!user) {
-                    console.warn("Firebase authentication user not established yet.");
+                    user = auth.currentUser;
+                }
+
+                if (!db) {
+                    console.error("Firestore database instance not initialized.");
+                    showToast("Erro ao conectar com o banco de dados.", "error");
                     return;
                 }
 
@@ -301,7 +308,9 @@
             }
         }
 
-        window.initFirebase = initFirebase;
+        window.addEventListener('firebase-modules-ready', () => {
+            initFirebase();
+        });
 
         function loadOfflineDefaultApps() {
             apps = [
@@ -318,26 +327,30 @@
 
         // Seed curated default GitHub apps into Cloud Firestore if empty
         async function seedDefaultApps() {
-            if (!user || !db) return;
+            if (!db) return;
+            // Ensure auth state is ready
+            if (!user && auth && auth.currentUser) {
+                user = auth.currentUser;
+            }
+            
             const { addDoc, collection } = window.firebaseModules;
             
-            // SUA LISTA INICIAL DE APLICATIVOS DO GITHUB
             const defaultAppsList = [
                 {
                     title: 'Excellington Dashboard',
-                    link: 'https://github.com',
+                    link: 'https://github.com/excellington',
                     description: 'Painel analítico completo para monitoramento de dados em tempo real com exportação em múltiplos formatos e gráficos dinâmicos.',
                     createdAt: Date.now()
                 },
                 {
                     title: 'CalcPro Financeiro',
-                    link: 'https://github.com',
+                    link: 'https://github.com/excellington',
                     description: 'Calculadora de juros compostos, fluxo de caixa e projeções financeiras avançadas desenvolvida sob medida para gestores.',
                     createdAt: Date.now()
                 },
                 {
                     title: 'TaskFlow Manager',
-                    link: 'https://github.com',
+                    link: 'https://github.com/excellington',
                     description: 'Gerenciador de tarefas ágil estilo Kanban com priorização inteligente, etiquetas customizadas e persistência segura.',
                     createdAt: Date.now()
                 }
@@ -384,7 +397,7 @@
 
         function unlockAdmin() {
             isAdminUnlocked = true;
-            showToast('Modo Administrador liberado com sucesso!', 'success');
+            showToast('Painel do administrador liberado com sucesso!', 'success');
             switchView('admin');
         }
 
@@ -547,6 +560,11 @@
 
             if (!title || !link || !description) return;
 
+            // Ensure auth user and db reference are ready
+            if (!user && auth && auth.currentUser) {
+                user = auth.currentUser;
+            }
+
             if (!db) {
                 showToast('Erro: Banco de dados não conectado.', 'error');
                 return;
@@ -667,7 +685,7 @@
                 .replace(/'/g, "&#039;");
         }
 
-        // Initialize App on load
+        // Fallback initialization check on window load
         window.onload = function() {
             if (!db && typeof window.initFirebase === 'function') {
                 window.initFirebase();
